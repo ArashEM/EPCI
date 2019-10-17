@@ -1,0 +1,8 @@
+Removed Pin From Net: NetName=PHY_COL Pin=R10-4
+Removed Pin From Net: NetName=PHY_RXD3 Pin=R13-4
+Removed Pin From Net: NetName=NetR10_5 Pin=U1-42
+Removed Pin From Net: NetName=NetR13_5 Pin=U1-46
+Added Pin To Net: NetName=PHY_RXD3 Pin=R10-4
+Added Pin To Net: NetName=PHY_COL Pin=R13-4
+Added Pin To Net: NetName=NetR13_5 Pin=U1-42
+Added Pin To Net: NetName=NetR10_5 Pin=U1-46

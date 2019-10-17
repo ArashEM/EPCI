@@ -1,0 +1,123 @@
+Added Pin To Net: NetName=C/BE3 Pin=U10-18
+Added Pin To Net: NetName=AD15 Pin=U11-18
+Added Pin To Net: NetName=B_AD0 Pin=U9-36
+Added Net: Name=B_AD0
+Added Pin To Net: NetName=B_AD1 Pin=U9-37
+Added Net: Name=B_AD1
+Added Pin To Net: NetName=B_AD2 Pin=U9-38
+Added Net: Name=B_AD2
+Added Pin To Net: NetName=B_AD3 Pin=U9-39
+Added Net: Name=B_AD3
+Added Pin To Net: NetName=B_AD4 Pin=U9-40
+Added Net: Name=B_AD4
+Added Pin To Net: NetName=B_AD5 Pin=U9-42
+Added Net: Name=B_AD5
+Added Pin To Net: NetName=B_AD6 Pin=U9-43
+Added Net: Name=B_AD6
+Added Pin To Net: NetName=B_AD7 Pin=U9-44
+Added Net: Name=B_AD7
+Added Pin To Net: NetName=B_AD8 Pin=U9-46
+Added Net: Name=B_AD8
+Added Pin To Net: NetName=B_AD9 Pin=U11-25
+Added Pin To Net: NetName=B_AD9 Pin=U15-141
+Added Net: Name=B_AD9
+Added Pin To Net: NetName=B_AD10 Pin=U11-26
+Added Pin To Net: NetName=B_AD10 Pin=U15-140
+Added Net: Name=B_AD10
+Added Pin To Net: NetName=B_AD11 Pin=U11-27
+Added Pin To Net: NetName=B_AD11 Pin=U15-139
+Added Net: Name=B_AD11
+Added Pin To Net: NetName=B_AD12 Pin=U11-28
+Added Pin To Net: NetName=B_AD12 Pin=U15-138
+Added Net: Name=B_AD12
+Added Pin To Net: NetName=B_AD13 Pin=U11-29
+Added Pin To Net: NetName=B_AD13 Pin=U15-137
+Added Net: Name=B_AD13
+Added Pin To Net: NetName=B_AD14 Pin=U11-30
+Added Pin To Net: NetName=B_AD14 Pin=U15-134
+Added Net: Name=B_AD14
+Added Pin To Net: NetName=B_AD15 Pin=U11-31
+Added Pin To Net: NetName=B_AD15 Pin=U15-133
+Added Net: Name=B_AD15
+Added Pin To Net: NetName=B_AD16 Pin=U11-44
+Added Pin To Net: NetName=B_AD16 Pin=U15-117
+Added Net: Name=B_AD16
+Added Pin To Net: NetName=B_AD17 Pin=U11-45
+Added Pin To Net: NetName=B_AD17 Pin=U15-116
+Added Net: Name=B_AD17
+Added Pin To Net: NetName=B_AD18 Pin=U11-46
+Added Pin To Net: NetName=B_AD18 Pin=U15-115
+Added Net: Name=B_AD18
+Added Pin To Net: NetName=B_AD19 Pin=U10-25
+Added Net: Name=B_AD19
+Added Pin To Net: NetName=B_AD20 Pin=U10-26
+Added Net: Name=B_AD20
+Added Pin To Net: NetName=B_AD21 Pin=U10-27
+Added Net: Name=B_AD21
+Added Pin To Net: NetName=B_AD22 Pin=U10-28
+Added Net: Name=B_AD22
+Added Pin To Net: NetName=B_AD23 Pin=U10-29
+Added Net: Name=B_AD23
+Added Pin To Net: NetName=B_AD24 Pin=U10-33
+Added Net: Name=B_AD24
+Added Pin To Net: NetName=B_AD25 Pin=U10-34
+Added Net: Name=B_AD25
+Added Pin To Net: NetName=B_AD26 Pin=U10-35
+Added Net: Name=B_AD26
+Added Pin To Net: NetName=B_AD27 Pin=U10-36
+Added Net: Name=B_AD27
+Added Pin To Net: NetName=B_AD28 Pin=U10-37
+Added Net: Name=B_AD28
+Added Pin To Net: NetName=B_AD29 Pin=U10-38
+Added Net: Name=B_AD29
+Added Pin To Net: NetName=B_AD30 Pin=U10-39
+Added Net: Name=B_AD30
+Added Pin To Net: NetName=B_AD31 Pin=U10-40
+Added Net: Name=B_AD31
+Added Pin To Net: NetName=B_C/BE0 Pin=U9-45
+Added Net: Name=B_C/BE0
+Added Pin To Net: NetName=B_C/BE1 Pin=U11-33
+Added Pin To Net: NetName=B_C/BE1 Pin=U15-132
+Added Net: Name=B_C/BE1
+Added Pin To Net: NetName=B_C/BE2 Pin=U11-43
+Added Pin To Net: NetName=B_C/BE2 Pin=U15-118
+Added Net: Name=B_C/BE2
+Added Pin To Net: NetName=B_C/BE3 Pin=U10-31
+Added Net: Name=B_C/BE3
+Added Pin To Net: NetName=B_DEVSEL Pin=U11-38
+Added Pin To Net: NetName=B_DEVSEL Pin=U15-123
+Added Net: Name=B_DEVSEL
+Added Pin To Net: NetName=B_FRAME Pin=U11-42
+Added Pin To Net: NetName=B_FRAME Pin=U15-119
+Added Net: Name=B_FRAME
+Added Pin To Net: NetName=B_GNT Pin=U10-43
+Added Net: Name=B_GNT
+Added Pin To Net: NetName=B_IDSEL Pin=U10-30
+Added Net: Name=B_IDSEL
+Added Pin To Net: NetName=B_INTA Pin=U10-46
+Added Net: Name=B_INTA
+Added Pin To Net: NetName=B_IRDY Pin=U11-40
+Added Pin To Net: NetName=B_IRDY Pin=U15-120
+Added Net: Name=B_IRDY
+Added Pin To Net: NetName=B_PAR Pin=U11-34
+Added Pin To Net: NetName=B_PAR Pin=U15-131
+Added Net: Name=B_PAR
+Added Pin To Net: NetName=B_PCI_CLK Pin=U10-44
+Added Net: Name=B_PCI_CLK
+Added Pin To Net: NetName=B_PCI_RSTN Pin=U10-45
+Added Net: Name=B_PCI_RSTN
+Added Pin To Net: NetName=B_PERR Pin=U11-36
+Added Pin To Net: NetName=B_PERR Pin=U15-126
+Added Net: Name=B_PERR
+Added Pin To Net: NetName=B_REQ Pin=U10-42
+Added Net: Name=B_REQ
+Added Pin To Net: NetName=B_SERR Pin=U11-35
+Added Pin To Net: NetName=B_SERR Pin=U15-127
+Added Net: Name=B_SERR
+Added Pin To Net: NetName=B_STOP Pin=U11-37
+Added Pin To Net: NetName=B_STOP Pin=U15-124
+Added Net: Name=B_STOP
+Added Pin To Net: NetName=B_TRDY Pin=U11-39
+Added Pin To Net: NetName=B_TRDY Pin=U15-121
+Added Net: Name=B_TRDY
+Added Class: Name=B_AD[31..0]

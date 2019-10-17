@@ -1,0 +1,27 @@
+default menu.c32
+#default vesamenu.c32
+prompt 0
+timeout 10
+ONTIMEOUT 1
+
+menu title ########## PXE Boot Menu ##########
+
+label 1
+menu label ^1) Ubuntu 16.04 over NFS
+KERNEL Ubuntu-16.04/vmlinuz-4.4.0-116-generic
+APPEND root=/dev/nfs initrd=Ubuntu-16.04/initrd.img-nfs-4.4.0-116-generic nfsroot=192.168.17.20:/home/me/G41/netboot/rootfs ip=dhcp rw console=tty0 console=ttyS0,115200
+
+label 2
+menu label ^2) Memtest86+5.01
+KERNEL Memtest/memtest86+
+APPEND console=ttyS0,115200
+
+label 3
+menu label ^3) Memtest86-4.3.7 (Serial Console)
+KERNEL Memtest/memtest86
+APPEND console=ttyS0,115200
+
+label 4
+menu label ^4) CentOS Linux (3.10.0-693.el7.x86_64) 7 (Core)
+KERNEL Centos7/vmlinuz
+APPEND initrd=Centos7/initrd.img root=nfs:192.168.17.20:/home/me/G41/netboot/rootfs-centos rw selinux=0 console=ttyS0,115200 console=tty0

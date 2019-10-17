@@ -1,0 +1,29 @@
+Change Component DesignItemId : Designator=C38 Old DesignItemId=Cap New DesignItemId=Cap Semi
+Change Component DesignItemId : Designator=C38 Old DesignItemId=Cap Semi New DesignItemId=Cap
+Change Component Footprint: Designator=C38 Old Footprint=0603PKG New Footprint=C0805
+Change Component Footprint: Designator=C38 Old Footprint=C0805 New Footprint=0603PKG
+Change Component Comment : Designator=C38 Old Comment=Cap New Comment=Cap Semi
+Change Component Comment : Designator=C38 Old Comment=Cap Semi New Comment=Cap
+Added Pin To Net: NetName=C/BE3 Pin=U10-18
+Added Pin To Net: NetName=AD15 Pin=U11-18
+Added Pin To Net: NetName=PHY_INT Pin=U15-79
+Added Pin To Net: NetName=PHY_TXD3 Pin=U15-80
+Added Pin To Net: NetName=PHY_TXD2 Pin=U15-81
+Added Pin To Net: NetName=PHY_TXD1 Pin=U15-82
+Added Pin To Net: NetName=PHY_TXD0 Pin=U15-83
+Added Pin To Net: NetName=PHY_TX_EN Pin=U15-84
+Added Pin To Net: NetName=PHY_TXCLK Pin=U15-85
+Added Pin To Net: NetName=PHY_RXD3 Pin=U15-87
+Added Pin To Net: NetName=PHY_RXD2 Pin=U15-88
+Added Pin To Net: NetName=PHY_RXD1 Pin=U15-92
+Added Pin To Net: NetName=PHY_RXD0 Pin=U15-93
+Added Pin To Net: NetName=PHY_COL Pin=U15-94
+Added Pin To Net: NetName=PHY_RXCLK Pin=U15-95
+Added Pin To Net: NetName=PHY_RX_ER Pin=U15-97
+Added Pin To Net: NetName=PHY_CRS Pin=U15-98
+Added Pin To Net: NetName=PHY_RX_DV Pin=U15-99
+Added Pin To Net: NetName=PHY_MDC Pin=U15-100
+Added Pin To Net: NetName=PHY_MDIO Pin=U15-101
+Added Pin To Net: NetName=PHY_RSTN Pin=U15-102
+Added Pin To Net: NetName=FT_TXD Pin=U15-104
+Added Pin To Net: NetName=FT_RXD Pin=U15-105

@@ -1,0 +1,6 @@
+[ProjectGroup]
+Version=1.0
+[Project1]
+ProjectPath=EPCI.PrjPcb
+[Project2]
+ProjectPath=..\..\..\PCBLib\PCB3D_LIB\Connector_IntLib.LibPkg
