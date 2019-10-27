@@ -1,0 +1,5 @@
+# Build object from HDL and ISE synthesis 
+FW/sources/hdl/build
+
+# Build object from kernel module and driver
+
