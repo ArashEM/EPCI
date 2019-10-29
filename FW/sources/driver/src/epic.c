@@ -1,23 +1,54 @@
-#include <linux/module.h>
+/**
+*	ecpi driver
+*	Copyright (C) 2019	arash.golgol@gmail.com
+*
+*/
 #include <linux/init.h>
-#include <linux/sched.h>
-#include <asm/current.h>
+#include <linux/kernel.h>
+#include <linux/fs.h>
+#include <linux/module.h>
+#include <linux/pci.h>
 
-MODULE_LICENSE("Dual BSD/GPL");
 
-static int hello_init(void)
+/**
+*	pci id table
+*/
+static const struct pci_device_id epci_pci_tbl[] = {
+	{ PCI_DEVICE(0x10EE,0x0600) },
+	{0, }
+};
+
+MODULE_DEVICE_TABLE(pci, epci_pci_tbl);
+
+/**
+*	ecpi probe
+*/
+static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 {
-	printk(KERN_ALERT "Hello world... \r\n");
-	printk(KERN_INFO "The process is (%s) (pid %i)\n",current->comm, current->pid);
 	return 0;
 }
 
-static void hello_exit(void)
+/**
+*	epci remove 
+*/
+void epci_remove(struct pci_dev *dev)
 {
-	printk(KERN_ALERT "Goodbye ... \r\n");
-	printk(KERN_INFO "The process is (%s) (pid %i)\n",current->comm, current->pid);
+
 }
 
-module_init(hello_init);
-module_exit(hello_exit);
 
+/**
+*	driver main structure
+*/
+static struct pci_driver epci_driver = {
+	.name = "epci",
+	.probe = epci_probe,
+	.remove = epci_remove,
+	.id_table = epci_pci_tbl,
+};
+
+MODULE_AUTHOR("Arash Golgol");
+MODULE_DESCRIPTION("EPCI-V1.0X char driver");
+MODULE_LICENSE("GPL");
+
+module_pci_driver(epci_driver);
