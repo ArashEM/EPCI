@@ -1,6 +1,6 @@
 INCLUDE=include
 SOURCE=src
-TARGET=epic
+TARGET=epci
 OUTPUT=build
 
 SOURCES=$(wildcard $(SOURCE)/*.c)
