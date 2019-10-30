@@ -8,6 +8,20 @@
 #include <linux/fs.h>
 #include <linux/module.h>
 #include <linux/pci.h>
+#include <linux/cdev.h>
+
+
+
+/**
+*	ecpi private data structure
+*/
+struct epci_priv {
+	struct cdev       cdev;		/* inherit char device */
+	struct pci_dev    *pdev;   	/* soft link to pci device */
+};
+
+
+
 
 
 /**
