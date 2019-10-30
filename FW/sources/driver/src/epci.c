@@ -1,5 +1,5 @@
 /**
-*	ecpi driver
+*	epci driver
 *	Copyright (C) 2019	arash.golgol@gmail.com
 *
 */
