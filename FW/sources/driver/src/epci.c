@@ -15,8 +15,8 @@
 /**
 *	constants
 */
-#define	EPCI_MAX_DEV	(1)
-#define EPCI_DEV_NAME	"epci-mem"
+const  unsigned EPCI_MAX_DEV = 1;
+const  char	EPCI_DEV_NAME[]	= "epci-mem";
 
 
 /**
@@ -25,7 +25,6 @@
 struct epci_priv {
 	struct cdev       cdev;		/* inherit char device */
 	struct pci_dev    *pdev;   	/* soft link to pci device */
-	dev_t             devno;
 };
 
 
@@ -49,6 +48,12 @@ static loff_t epci_llseek(struct file * file, loff_t offset, int whence)
 
 static int epci_open(struct inode * inode, struct file * file)
 {
+	struct epci_priv *priv = NULL;
+
+	/* resolve private data*/
+	priv = container_of(inode->i_cdev , struct epci_priv, cdev);
+	file->private_data = priv;
+
 	return 0;
 }
 
@@ -93,7 +98,7 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 
 	ret = alloc_chrdev_region(&devno, 0, EPCI_MAX_DEV, EPCI_DEV_NAME);
 	if(ret < 0) {
-		dev_err(&dev->dev, "alloc_chrdev_region() failed for epci-mem\n");
+		dev_err(&dev->dev, "alloc_chrdev_region() failed for %s\n",EPCI_DEV_NAME);
 		goto error_alloc;
 	}
 
@@ -101,17 +106,23 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 	priv->cdev.owner = THIS_MODULE;
 	ret = cdev_add(&priv->cdev, devno, EPCI_MAX_DEV);
 	if(ret < 0) {
-		dev_err(&dev->dev, "cdev_add() failed for epci-mem\n");
+		dev_err(&dev->dev, "cdev_add() failed for %s\n",EPCI_DEV_NAME);
 		goto error_cdev;
 	}		
 
-	priv->devno = devno;
 	priv->pdev  = dev; 		/* soft link for file operation use */
 	pci_set_drvdata(dev, priv);	/* soft link for deiver model usage */
 	
+	ret = pci_enable_device(dev);
+	if(ret < 0) {
+		dev_err(&dev->dev, "pci_enable_device() filed for %s\n",EPCI_DEV_NAME);
+		goto error_pci;
+	}
 
 	return 0;
 
+error_pci:
+	cdev_del(&priv->cdev);
 error_cdev:
 	unregister_chrdev_region(devno, EPCI_MAX_DEV);
 error_alloc:
