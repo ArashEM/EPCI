@@ -10,21 +10,24 @@
 #include <linux/pci.h>
 #include <linux/cdev.h>
 #include <linux/errno.h>
+#include <linux/io.h>
 
 
 /**
 *	constants
 */
-const  unsigned EPCI_MAX_DEV = 1;
+const  unsigned EPCI_MAX_DEV	= 1;
 const  char	EPCI_DEV_NAME[]	= "epci-mem";
-
+const  unsigned EPCI_MEM_BAR	= 0;
 
 /**
 *	ecpi private data structure
 */
 struct epci_priv {
-	struct cdev       cdev;		/* inherit char device */
-	struct pci_dev    *pdev;   	/* soft link to pci device */
+	struct cdev	cdev;		/* inherit char device */
+	struct pci_dev	*pdev;   	/* soft link to pci device */
+
+	unsigned long 	memaddr;	/* memory mapped address*/
 };
 
 
@@ -119,6 +122,27 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 		goto error_pci;
 	}
 
+	priv->memaddr = pci_resource_start(dev, EPCI_MEM_BAR);
+	if(!priv->memaddr) {
+		dev_err(&dev->dev, "no IO address at PCI BAR%d\n",EPCI_MEM_BAR);
+		goto error_pci;
+	}
+
+	if((pci_resource_flags(dev, EPCI_MEM_BAR) & IORESOURCE_MEM) == 0) {
+		dev_err(&dev->dev, "no MEM resource at PCI BAR%d\n",EPCI_MEM_BAR);
+		goto error_pci;
+	}
+
+	ret = pci_request_region(dev, EPCI_MEM_BAR, EPCI_DEV_NAME);
+	if(ret < 0) {
+		dev_err(&dev->dev, "I/O resource @0x%lx busy\n",priv->memaddr);
+		goto error_pci;
+	}
+
+	/**
+	for(ret = 0; ret < 8; ret ++) 
+		dev_info(&dev->dev,"REG[%#02x] = %#08x\n", ret, inb_p(priv->memaddr + ret));
+	*/
 	return 0;
 
 error_pci:
@@ -138,6 +162,7 @@ void epci_remove(struct pci_dev *dev)
 	struct epci_priv * priv = NULL;
 
 	priv = pci_get_drvdata(dev);
+	pci_release_region(dev, EPCI_MEM_BAR);
 	cdev_del(&priv->cdev);
 	/* cdev had dev_t internaly, so we use it in unregisteration */
 	unregister_chrdev_region(priv->cdev.dev, EPCI_MAX_DEV);
