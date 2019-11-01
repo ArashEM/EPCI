@@ -115,8 +115,7 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 error_cdev:
 	unregister_chrdev_region(devno, EPCI_MAX_DEV);
 error_alloc:
-	kfree(priv);
-
+	/* devm_kfree(&dev->dev, priv); */
 	return ret;
 }
 
@@ -132,7 +131,7 @@ void epci_remove(struct pci_dev *dev)
 	/* cdev had dev_t internaly, so we use it in unregisteration */
 	unregister_chrdev_region(priv->cdev.dev, EPCI_MAX_DEV);
 	/* by using devm_ allocation function, there is no need to free */
-	/* devm_kfree(priv); */
+	/* devm_kfree(&dev->dev, priv); */
 }
 
 
