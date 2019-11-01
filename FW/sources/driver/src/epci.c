@@ -9,7 +9,14 @@
 #include <linux/module.h>
 #include <linux/pci.h>
 #include <linux/cdev.h>
+#include <linux/errno.h>
 
+
+/**
+*	constants
+*/
+#define	EPCI_MAX_DEV	(1)
+#define EPCI_DEV_NAME	"epci-mem"
 
 
 /**
@@ -18,6 +25,7 @@
 struct epci_priv {
 	struct cdev       cdev;		/* inherit char device */
 	struct pci_dev    *pdev;   	/* soft link to pci device */
+	dev_t             devno;
 };
 
 
@@ -73,8 +81,43 @@ MODULE_DEVICE_TABLE(pci, epci_pci_tbl);
 */
 static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 {
-	printk(KERN_NOTICE "PCI device: vendor: %#04x, device: %#04x \r\n",dev->vendor, dev->device);
+	struct	epci_priv  *priv;
+	dev_t	devno = 0;
+	int	ret = 0;
+
+	dev_info(&dev->dev, "probing pci device %#04x:%#04x\n",dev->vendor, dev->device);
+
+	priv = devm_kzalloc(&dev->dev, sizeof(*priv),GFP_KERNEL);
+	if(!priv)
+		return -ENOMEM;
+
+	ret = alloc_chrdev_region(&devno, 0, EPCI_MAX_DEV, EPCI_DEV_NAME);
+	if(ret < 0) {
+		dev_err(&dev->dev, "alloc_chrdev_region() failed for epci-mem\n");
+		goto error_alloc;
+	}
+
+	cdev_init(&priv->cdev, &epci_fops);
+	priv->cdev.owner = THIS_MODULE;
+	ret = cdev_add(&priv->cdev, devno, EPCI_MAX_DEV);
+	if(ret < 0) {
+		dev_err(&dev->dev, "cdev_add() failed for epci-mem\n");
+		goto error_cdev;
+	}		
+
+	priv->devno = devno;
+	priv->pdev  = dev; 		/* soft link for file operation use */
+	pci_set_drvdata(dev, priv);	/* soft link for deiver model usage */
+	
+
 	return 0;
+
+error_cdev:
+	unregister_chrdev_region(devno, EPCI_MAX_DEV);
+error_alloc:
+	kfree(priv);
+
+	return ret;
 }
 
 /**
@@ -82,7 +125,14 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 */
 void epci_remove(struct pci_dev *dev)
 {
+	struct epci_priv * priv = NULL;
 
+	priv = pci_get_drvdata(dev);
+	cdev_del(&priv->cdev);
+	/* cdev had dev_t internaly, so we use it in unregisteration */
+	unregister_chrdev_region(priv->cdev.dev, EPCI_MAX_DEV);
+	/* by using devm_ allocation function, there is no need to free */
+	/* devm_kfree(priv); */
 }
 
 
@@ -90,10 +140,10 @@ void epci_remove(struct pci_dev *dev)
 *	driver main structure
 */
 static struct pci_driver epci_driver = {
-	.name = "epci",
-	.probe = epci_probe,
-	.remove = epci_remove,
-	.id_table = epci_pci_tbl,
+	.name      =  "epci",
+	.probe     =  epci_probe,
+	.remove    =  epci_remove,
+	.id_table  =  epci_pci_tbl,
 };
 
 MODULE_AUTHOR("Arash Golgol");
