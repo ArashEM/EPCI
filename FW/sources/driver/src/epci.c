@@ -28,6 +28,7 @@ struct epci_priv {
 	struct pci_dev	*pdev;   	/* soft link to pci device */
 
 	unsigned long 	memaddr;	/* memory mapped address*/
+	void __iomem	*base;
 };
 
 
@@ -139,12 +140,17 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 		goto error_pci;
 	}
 
-	/**
-	for(ret = 0; ret < 8; ret ++) 
-		dev_info(&dev->dev,"REG[%#02x] = %#08x\n", ret, inb_p(priv->memaddr + ret));
-	*/
+	priv->base = pci_iomap(dev, EPCI_MEM_BAR, 0);	
+	if(priv->base == NULL) {
+		dev_err(&dev->dev, "pci_iomap() failed\n");
+		ret = -ENOMEM;
+		goto error_map;
+	}
+	
 	return 0;
 
+error_map:
+	pci_release_region(dev, EPCI_MEM_BAR);
 error_pci:
 	cdev_del(&priv->cdev);
 error_cdev:
@@ -162,6 +168,7 @@ void epci_remove(struct pci_dev *dev)
 	struct epci_priv * priv = NULL;
 
 	priv = pci_get_drvdata(dev);
+	pci_iounmap(dev, priv->base);
 	pci_release_region(dev, EPCI_MEM_BAR);
 	cdev_del(&priv->cdev);
 	/* cdev had dev_t internaly, so we use it in unregisteration */
