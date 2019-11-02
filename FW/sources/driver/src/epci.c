@@ -27,8 +27,8 @@ struct epci_priv {
 	struct cdev	cdev;		/* inherit char device */
 	struct pci_dev	*pdev;   	/* soft link to pci device */
 
-	unsigned long 	memaddr;	/* memory mapped address*/
-	void __iomem	*base;
+	unsigned long	memaddr;	/* physical address */
+	void __iomem	*base;		/* memory mapped address */
 };
 
 
@@ -37,16 +37,25 @@ struct epci_priv {
 */
 static ssize_t epci_read(struct file * file, char __user * buf, size_t count, loff_t *offset)
 {
+	struct epci_priv * priv = NULL;
+	priv = file->private_data;
+
 	return 0;
 }
 
 static ssize_t epci_write(struct file * file, const char __user * buf, size_t count, loff_t *offset)
 {
+	struct epci_priv * priv = NULL;
+	priv = file->private_data;
+	
 	return 0;
 }
 
 static loff_t epci_llseek(struct file * file, loff_t offset, int whence)
 {
+	struct epci_priv * priv = NULL;
+	priv = file->private_data;
+	
 	return 0;
 }
 
