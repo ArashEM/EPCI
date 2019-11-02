@@ -135,11 +135,13 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 	priv->memaddr = pci_resource_start(dev, EPCI_MEM_BAR);
 	if(!priv->memaddr) {
 		dev_err(&dev->dev, "no IO address at PCI BAR%d\n",EPCI_MEM_BAR);
+		ret = -ENODEV;
 		goto error_pci;
 	}
 
 	if((pci_resource_flags(dev, EPCI_MEM_BAR) & IORESOURCE_MEM) == 0) {
 		dev_err(&dev->dev, "no MEM resource at PCI BAR%d\n",EPCI_MEM_BAR);
+		ret = -ENODEV;
 		goto error_pci;
 	}
 
