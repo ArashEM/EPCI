@@ -11,6 +11,7 @@
 #include <linux/cdev.h>
 #include <linux/errno.h>
 #include <linux/io.h>
+#include <linux/moduleparam.h>
 
 
 /**
@@ -21,6 +22,13 @@ const  char	EPCI_DEV_NAME[]	= "epci-mem";
 const  unsigned EPCI_MEM_BAR	= 0;
 
 /**
+*	module parameters
+*/
+static int	mem_len = 256;	/*how many bytes is available in BAR of EPCI*/
+module_param(mem_len, int, S_IRUGO);
+MODULE_PARM_DESC(mem_len, "Lenght of memory part in EPCI");
+
+/**
 *	ecpi private data structure
 */
 struct epci_priv {
@@ -29,6 +37,7 @@ struct epci_priv {
 
 	unsigned long	memaddr;	/* physical address */
 	void __iomem	*base;		/* memory mapped address */
+	unsigned long	size;		/* memory lenght of EPCI */
 };
 
 
@@ -104,10 +113,16 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 	int	ret = 0;
 
 	dev_info(&dev->dev, "probing pci device %#04x:%#04x\n",dev->vendor, dev->device);
+	if(!mem_len) {
+		dev_err(&dev->dev, "memory length can not be 0\n");
+		return -EINVAL;
+	}
 
 	priv = devm_kzalloc(&dev->dev, sizeof(*priv),GFP_KERNEL);
 	if(!priv)
 		return -ENOMEM;
+
+	priv->size = mem_len;	/* set memory length */
 
 	ret = alloc_chrdev_region(&devno, 0, EPCI_MAX_DEV, EPCI_DEV_NAME);
 	if(ret < 0) {
