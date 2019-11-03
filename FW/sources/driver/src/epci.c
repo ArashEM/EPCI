@@ -12,6 +12,7 @@
 #include <linux/errno.h>
 #include <linux/io.h>
 #include <linux/moduleparam.h>
+#include <linux/uaccess.h>
 
 
 /**
@@ -44,23 +45,55 @@ struct epci_priv {
 /**
 *	epci file operations 
 */
-static ssize_t epci_read(struct file * file, char __user * buf, size_t count, loff_t *offset)
+static ssize_t 
+epci_read(struct file * file, char __user * buf, size_t count, loff_t *offset)
 {
 	struct epci_priv * priv = NULL;
+	ssize_t	ret = 0;
+
 	priv = file->private_data;
 
-	return 0;
+	if(*offset > priv->size)
+		goto out;
+	if(*offset + count > priv->size)
+		count = priv->size - *offset;
+
+	if(copy_to_user(buf, priv->base, count)) {
+		ret = -EFAULT;
+		goto out;
+	}
+	
+	*offset += count;
+	ret = count;
+out:
+	return ret;
+	
 }
 
-static ssize_t epci_write(struct file * file, const char __user * buf, size_t count, loff_t *offset)
+static ssize_t 
+epci_write(struct file * file, const char __user * buf, size_t count, loff_t *offset)
 {
 	struct epci_priv * priv = NULL;
+	ssize_t	ret = -ENOMEM;
+
 	priv = file->private_data;
 	
-	return 0;
+	if(count > priv->size)
+		count = priv->size;
+	
+	if(copy_from_user(priv->base, buf, count)) {
+		ret = -EFAULT;
+		goto out;
+	}
+	
+	*offset += count;
+	ret = count;
+out:
+	return ret;
 }
 
-static loff_t epci_llseek(struct file * file, loff_t offset, int whence)
+static loff_t 
+epci_llseek(struct file * file, loff_t offset, int whence)
 {
 	struct epci_priv * priv = NULL;
 	priv = file->private_data;
