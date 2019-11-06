@@ -19,7 +19,7 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 use work.parity.all;
 
 
-entity epic_top is
+entity epci_top is
 	generic 
 	(
 		BusWidth	: integer 	:= 32;
@@ -56,9 +56,9 @@ entity epic_top is
 		pci_prsnt_o 		:	out		std_logic	:=	'1';
 		pci_bus_en_o		:	out		std_logic	:=	'1'
 	);
-end epic_top;
+end epci_top;
 
-architecture behavioral of epic_top is
+architecture behavioral of epci_top is
 	
 	----------------------------------------------------------------
 	signal		bus_address	:	std_logic_vector(AddrWidth - 1 downto 0);

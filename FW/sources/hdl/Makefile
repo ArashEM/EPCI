@@ -14,7 +14,8 @@
 #********************************************************************************************
 #	From project: https://github.com/duskwuff/Xilinx-ISE-Makefile.git
 #********************************************************************************************
-include configs/project.cfg
+CONFIGS = configs/project.cfg
+include $(CONFIGS)
 
 
 ###########################################################################
@@ -92,9 +93,9 @@ export XILINX
 default: $(BITFILE)
 
 clean:
-	rm -rf build
+	@rm -rf build
 
-build/$(PROJECT).prj: project.cfg
+build/$(PROJECT).prj: $(CONFIGS)
 	@echo "Updating $@"
 	@mkdir -p build
 	@rm -f $@
@@ -107,7 +108,7 @@ build/$(PROJECT)_sim.prj: build/$(PROJECT).prj
 	@$(foreach file,$(VHDTEST),echo "vhdl work \"../$(file)\"" >> $@;)
 	@echo "verilog work $(XILINX)/verilog/src/glbl.v" >> $@
 
-build/$(PROJECT).scr: project.cfg
+build/$(PROJECT).scr: $(CONFIGS)
 	@echo "Updating $@"
 	@mkdir -p build
 	@rm -f $@
@@ -121,7 +122,7 @@ build/$(PROJECT).scr: project.cfg
 	    "-p $(TARGET_PART)" \
 	    > build/$(PROJECT).scr
 
-$(BITFILE): project.cfg $(VSOURCE) $(CONSTRAINTS) build/$(PROJECT).prj build/$(PROJECT).scr
+$(BITFILE): $(CONFIGS) $(VSOURCE) $(CONSTRAINTS) build/$(PROJECT).prj build/$(PROJECT).scr
 	@mkdir -p build
 	$(call RUN,xst) $(COMMON_OPTS) \
 	    -ifn $(PROJECT).scr
