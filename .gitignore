@@ -2,4 +2,5 @@
 FW/sources/hdl/build
 
 # Build object from kernel module and driver
+FW/sources/driver/build
 
