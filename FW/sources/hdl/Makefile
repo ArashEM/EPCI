@@ -46,6 +46,7 @@ PAR_OPTS        ?=
 BITGEN_OPTS     ?=
 TRACE_OPTS      ?=
 FUSE_OPTS       ?= -incremental
+PROM_OPTS		?= -w -p mcs -spi -s 4096 -u 0x0
 
 PROGRAMMER      ?= none
 
@@ -90,7 +91,7 @@ export XILINX
 # Default build
 ###########################################################################
 
-default: $(BITFILE)
+default: $(BITFILE) $(CONFIGS)
 
 clean:
 	@rm -rf build
@@ -138,6 +139,11 @@ $(BITFILE): $(CONFIGS) $(VSOURCE) $(CONSTRAINTS) build/$(PROJECT).prj build/$(PR
 	    -w $(PROJECT).ncd $(PROJECT).bit
 	@echo -ne "\e[1;32m======== OK ========\e[m\n"
 
+###########################################################################
+# Programming Artifacts
+###########################################################################
+mcs: $(BITFILE)
+	$(call RUN,promgen) $(PROM_OPTS)  $(PROJECT).bit -o $(PROJECT).mcs
 
 ###########################################################################
 # Testing (work in progress)
