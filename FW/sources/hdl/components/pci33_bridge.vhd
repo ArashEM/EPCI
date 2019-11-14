@@ -55,6 +55,7 @@ entity pci33_bridge is
 		OBUS	:	out			std_logic_vector(BusWidth - 1  downto 0);
 		IBUS	:	in			std_logic_vector(BusWidth - 1 downto 0);
 		RD_STRB	:	out			std_logic;
+		NMASK	:	out			std_logic_vector(BusWidth/8 - 1 downto 0);
 		WR_STRB	:	out			std_logic
 		
 	);
@@ -430,6 +431,7 @@ begin
 	WR_STRB	<=	WriteStb;
 	RD_STRB	<=	ReadStb;
 	ADDR	<=	A(AddrWidth - 1 downto 0);
+	NMASK	<=	NCBE;
 
 end behavioral;
 

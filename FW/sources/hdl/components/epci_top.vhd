@@ -16,6 +16,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
+USE IEEE.NUMERIC_STD.ALL;
 use work.parity.all;
 
 
@@ -66,20 +67,47 @@ architecture behavioral of epci_top is
 	signal		bus_r_data	:	std_logic_vector(BusWidth - 1 downto 0);
 	signal		bus_rd_strb	:	std_logic;
 	signal		bus_wr_strb	:	std_logic;
+	signal		bus_nmask	:	std_logic_vector(BusWidth/8 - 1 downto 0);
 	-----------------------------------------------------------------
 	signal		U1_mem_CS	:	std_logic;
 	-----------------------------------------------------------------
 	signal		U2_LED_CS	:	std_logic;
 	----------------------------------------------------------------
 	-- Address Map
-	constant	BRAM_ADDR_W	:	integer		:=	13;			-- 8K x 32 bit
+	--###########################################################
+	--	(0		, 0x8000)	:	BRAM 	(8K x 32 bit)
+	--	(0x8000	, 0x8040)	:	GPIO	(8	x 32 bit)
+	--###########################################################
+	
+	constant	BRAM_ADDR_W	:	integer		
+							:=	13;					-- 8K x 32 bit
+							
 	-- offset address must be aligned to address width according to AddrWidth
-	constant	BRAM_OFFSET	:	std_logic_vector(AddrWidth - BRAM_ADDR_W - 1 downto 0)
-											:=	(others => '0');
-											
-	constant	GPIO_ADDR_W	:	integer		:=	3;
-	constant	GPIO_OFFSET	:	std_logic_vector(AddrWidth - 1 downto 0)
-											:=	(others => '0');
+	constant	BRAM_SIZE	:	integer		
+							:=	BRAM_ADDR_W + 2;	-- 32 bit bus width
+							
+	constant	BRAM_BASE	:	std_logic_vector(
+									AddrWidth - 1 downto 0)	
+							:=	x"0000";
+							
+	constant	BRAM_MASK	:	std_logic_vector(
+									AddrWidth - BRAM_SIZE - 1 downto 0
+								)
+							:=	BRAM_BASE(AddrWidth - 1 downto BRAM_SIZE);
+	-----------------------------------------------------------------------------
+	constant	GPIO_ADDR_W	:	integer		
+							:=	1;			-- 2 x 32 bit
+							
+	constant	GPIO_SIZE	:	integer	
+							:=	GPIO_ADDR_W + 2;	-- 32 bit bus width
+							
+	constant	GPIO_BASE	:	std_logic_vector(
+									AddrWidth - 1 downto 0)	
+							:=	x"8000";			
+	constant	GPIO_MASK	:	std_logic_vector(
+									AddrWidth - GPIO_SIZE - 1 downto 0
+								)
+							:=	GPIO_BASE(AddrWidth - 1 downto GPIO_SIZE);
 
 begin	
 
@@ -116,6 +144,7 @@ begin
 		ADDR		=>	bus_address,
 		OBUS		=>	bus_w_data,
 		IBUS		=>	bus_r_data,
+		NMASK		=>	bus_nmask,
 		RD_STRB		=>	bus_rd_strb,
 		WR_STRB		=>	bus_wr_strb
 	);
@@ -134,9 +163,10 @@ begin
 		-- Memory Map interface
 		-------------------------------------------------------------
 		CS			=>	U1_mem_CS,
-		ADDR		=>	bus_address(BRAM_ADDR_W - 1 downto 0),
+		ADDR		=>	bus_address(BRAM_SIZE - 1 downto 2),
 		OBUS		=>	bus_r_data,
 		IBUS		=>	bus_w_data,
+		NMASK		=>	bus_nmask,
 		RD_STRB		=>	bus_rd_strb,
 		WR_STRB		=>	bus_wr_strb
 	);
@@ -172,19 +202,18 @@ begin
 	
 	Decode: process(bus_address, bus_rd_strb, bus_wr_strb) 
 	begin
-		
-		-- BRAM on address (0x0000 to 0x00FF)
-		if(bus_address(AddrWidth - 1 downto BRAM_ADDR_W) = BRAM_OFFSET) then
+	
+		if(bus_address(AddrWidth - 1 downto BRAM_SIZE) = BRAM_MASK) then
 			U1_mem_CS	<=	'1';
 		else
 			U1_mem_CS	<=	'0';
 		end if;
 		
-		-- if(bus_address(15 downto 8) = x"01") then
-			-- U2_LED_CS	<=	'1';
-		-- else
-			-- U2_LED_CS	<=	'0';
-		-- end if;
+		if(bus_address(AddrWidth - 1 downto GPIO_SIZE ) = GPIO_MASK) then
+			U2_LED_CS	<=	'1';
+		else
+			U2_LED_CS	<=	'0';
+		end if;
 		
 	end process;
 
