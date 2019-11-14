@@ -46,7 +46,7 @@ architecture behavioral of BRAM is
 
 	----------------------------------------------------------------
 	-- BRAM interface
-    type 		ram_type is array (0 to 255) of std_logic_vector(BusWidth - 1 downto 0);
+    type 		ram_type is array (0 to 2**AddrWidth - 1) of std_logic_vector(BusWidth - 1 downto 0);
     signal 		RAM 		: 	ram_type :=     (others => x"55AA55AA");
     signal 		dradd 		: 	std_logic_vector(AddrWidth - 1 downto 0);
     signal 		readout 	: 	std_logic_vector(BusWidth - 1 downto 0); 
@@ -60,7 +60,7 @@ begin
             if (WR_STRB = '1' and CS = '1') then
                 RAM(to_integer(unsigned(ADDR))) <= IBUS;
             end if;
-			dradd	<=	ADDR(7 downto 0);
+			dradd	<=	ADDR;
         end if;
 		
 		-- Read mechanism 

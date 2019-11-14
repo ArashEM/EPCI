@@ -70,6 +70,16 @@ architecture behavioral of epci_top is
 	signal		U1_mem_CS	:	std_logic;
 	-----------------------------------------------------------------
 	signal		U2_LED_CS	:	std_logic;
+	----------------------------------------------------------------
+	-- Address Map
+	constant	BRAM_ADDR_W	:	integer		:=	13;			-- 8K x 32 bit
+	-- offset address must be aligned to address width according to AddrWidth
+	constant	BRAM_OFFSET	:	std_logic_vector(AddrWidth - BRAM_ADDR_W - 1 downto 0)
+											:=	(others => '0');
+											
+	constant	GPIO_ADDR_W	:	integer		:=	3;
+	constant	GPIO_OFFSET	:	std_logic_vector(AddrWidth - 1 downto 0)
+											:=	(others => '0');
 
 begin	
 
@@ -113,7 +123,7 @@ begin
 	U1_MEM: entity work.BRAM
 	generic map (
 		BusWidth	=>	BusWidth,
-		AddrWidth	=>	8
+		AddrWidth	=>	BRAM_ADDR_W
 	)
 	port map(
 		-------------------------------------------------------------
@@ -124,7 +134,7 @@ begin
 		-- Memory Map interface
 		-------------------------------------------------------------
 		CS			=>	U1_mem_CS,
-		ADDR		=>	bus_address(7 downto 0),
+		ADDR		=>	bus_address(BRAM_ADDR_W - 1 downto 0),
 		OBUS		=>	bus_r_data,
 		IBUS		=>	bus_w_data,
 		RD_STRB		=>	bus_rd_strb,
@@ -164,17 +174,17 @@ begin
 	begin
 		
 		-- BRAM on address (0x0000 to 0x00FF)
-		if(bus_address(15 downto 8) = x"00") then
+		if(bus_address(AddrWidth - 1 downto BRAM_ADDR_W) = BRAM_OFFSET) then
 			U1_mem_CS	<=	'1';
 		else
 			U1_mem_CS	<=	'0';
 		end if;
 		
-		if(bus_address(15 downto 8) = x"01") then
-			U2_LED_CS	<=	'1';
-		else
-			U2_LED_CS	<=	'0';
-		end if;
+		-- if(bus_address(15 downto 8) = x"01") then
+			-- U2_LED_CS	<=	'1';
+		-- else
+			-- U2_LED_CS	<=	'0';
+		-- end if;
 		
 	end process;
 
