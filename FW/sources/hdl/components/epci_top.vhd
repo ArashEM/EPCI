@@ -25,7 +25,8 @@ entity epci_top is
 	(
 		BusWidth	: integer 	:= 32;
 		AddrWidth	: integer 	:= 16;
-		IOWidth		: integer	:= 3
+		GPIOWidth	: integer	:= 4;
+		LEDWidth	: integer	:= 3
 	);    
 	port 
 	( 
@@ -71,7 +72,9 @@ architecture behavioral of epci_top is
 	-----------------------------------------------------------------
 	signal		U1_mem_CS	:	std_logic;
 	-----------------------------------------------------------------
-	signal		U2_LED_CS	:	std_logic;
+	signal		U2_GPIO_CS	:	std_logic;
+	----------------------------------------------------------------
+	signal		U3_LEDS_CS	:	std_logic;
 	----------------------------------------------------------------
 	-- Address Map
 	--###########################################################
@@ -108,6 +111,20 @@ architecture behavioral of epci_top is
 									AddrWidth - GPIO_SIZE - 1 downto 0
 								)
 							:=	GPIO_BASE(AddrWidth - 1 downto GPIO_SIZE);
+	-----------------------------------------------------------------------------
+	constant	LED_ADDR_W	:	integer		
+							:=	2;			-- 4 x 32 bit
+							
+	constant	LED_SIZE	:	integer	
+							:=	LED_ADDR_W + 2;	-- 32 bit bus width
+							
+	constant	LED_BASE	:	std_logic_vector(
+									AddrWidth - 1 downto 0)	
+							:=	x"8010";			
+	constant	LED_MASK	:	std_logic_vector(
+									AddrWidth - LED_SIZE - 1 downto 0
+								)
+							:=	LED_BASE(AddrWidth - 1 downto LED_SIZE);
 
 begin	
 
@@ -149,6 +166,7 @@ begin
 		WR_STRB		=>	bus_wr_strb
 	);
 
+	--%<-------------------------------%<---------------------------
 	U1_MEM: entity work.BRAM
 	generic map (
 		BusWidth	=>	BusWidth,
@@ -171,7 +189,8 @@ begin
 		WR_STRB		=>	bus_wr_strb
 	);
 	
-	U2_LED:	entity	work.GPIO
+	--%<-------------------------------%<---------------------------
+	U2_GPIO:	entity	work.GPIO
 	generic map
 		(
 			BusWidth	=>	BusWidth,
@@ -187,32 +206,67 @@ begin
 		-------------------------------------------------------------
 		-- Input / Output port
 		-------------------------------------------------------------
-		oport		=>	LEDS,
+		-- oport		=>	NULL,
 		-------------------------------------------------------------
 		-- Memory Map interface
 		-------------------------------------------------------------
-		CS			=>	U2_LED_CS,
+		CS			=>	U2_GPIO_CS,
 		ADDR		=>	bus_address(7 downto 0),
 		OBUS		=>	bus_r_data,
 		IBUS		=>	bus_w_data,
 		RD_STRB		=>	bus_rd_strb,
 		WR_STRB		=>	bus_wr_strb
 	);
-	
+	--%<-------------------------------%<---------------------------
+	U3_LEDs: entity work.LED 
+	generic map (
+		BusWidth	=>	BusWidth,
+		AddrWidth	=>	LED_ADDR_W,
+		NumLEDs		=>	LEDWidth
+	)
+	port map (
+		-------------------------------------------------------------
+		-- Clock / Reset
+		-------------------------------------------------------------
+		CLK			=>	PCLK,
+		RST_N		=> 	NRST,
+		-------------------------------------------------------------
+		-- Input / Output port
+		-------------------------------------------------------------
+		leds		=>	LEDS,
+		-------------------------------------------------------------
+		-- Memory Map interface
+		-------------------------------------------------------------
+		CS			=>	U3_LEDS_CS,
+		ADDR		=>	bus_address(LED_SIZE - 1 downto 2),
+		OBUS		=>	bus_r_data,
+		IBUS		=>	bus_w_data,
+		NMASK		=>	bus_nmask,
+		RD_STRB		=>	bus_rd_strb,
+		WR_STRB		=>	bus_wr_strb
+	);
 	
 	Decode: process(bus_address, bus_rd_strb, bus_wr_strb) 
 	begin
-	
+		-- BRAM 
 		if(bus_address(AddrWidth - 1 downto BRAM_SIZE) = BRAM_MASK) then
 			U1_mem_CS	<=	'1';
 		else
 			U1_mem_CS	<=	'0';
 		end if;
 		
+		-- GPIO
 		if(bus_address(AddrWidth - 1 downto GPIO_SIZE ) = GPIO_MASK) then
-			U2_LED_CS	<=	'1';
+			U2_GPIO_CS	<=	'1';
 		else
-			U2_LED_CS	<=	'0';
+			U2_GPIO_CS	<=	'0';
+		end if;
+		
+		-- LED
+		if(bus_address(AddrWidth - 1 downto LED_SIZE ) = LED_MASK) then
+			U3_LEDS_CS	<=	'1';
+		else
+			U3_LEDS_CS	<=	'0';
 		end if;
 		
 	end process;
