@@ -49,6 +49,9 @@ end LED;
 architecture behavior of LED is
 	---------------------------------------------------------------------------
 	-- Each LED has 4x8bit register
+	-- register(7 downto 0)		:	on/off
+	-- register(15 downto 8)	:	pwm
+	-- register(31 downto 16)	:	future use
 	type	led_regfile_t	is 	array(0 to NumLEDs - 1) of 
 							std_logic_vector(31 downto 0);
 	signal	led_regfile		:	led_regfile_t	:= (others =>x"00000000");
@@ -91,5 +94,10 @@ begin
 		end if;
 		
     end process regfile_proc; 
+	
+	drive_gen: 
+	for I in 0 to NumLEDs - 1 generate
+		leds(I)		<=	led_regfile(I)(0);
+	end generate drive_gen;
 
 end behavior;
