@@ -54,7 +54,14 @@ entity epci_top is
 		---------------------------------------------------------------
 		-- General signals
 		---------------------------------------------------------------
-		LEDS				: 	out 	std_logic_vector(2 downto 0)	:=	"000";
+		LEDS				: 	out 	std_logic_vector(LEDWidth - 1 downto 0)	
+							:=	(others => '0');
+		UART_TX				:	out		std_logic	:=	'0';
+		UART_RX				:	in		std_logic;
+		GPIO				:	inout	std_logic_vector(GPIOWidth - 1 downto 0)
+							:=	(others => 'Z');
+		I2C_SDA				:	inout	std_logic	:=	'Z';
+		I2C_SCL				:	out		std_logic	:=	'0';
 		pci_prsnt_o 		:	out		std_logic	:=	'1';
 		pci_bus_en_o		:	out		std_logic	:=	'1'
 	);
