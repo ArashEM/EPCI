@@ -49,14 +49,15 @@ end LED;
 architecture behavior of LED is
 	---------------------------------------------------------------------------
 	-- Each LED has 4x8bit register
-	-- register(7 downto 0)		:	on/off
-	-- register(15 downto 8)	:	pwm
-	-- register(31 downto 16)	:	future use
+	-- register(7 downto 0)(0)	:	on/off
+	-- register(15 downto 8)	:	future use
+	-- register(31 downto 16)	:	pwm
 	type	led_regfile_t	is 	array(0 to NumLEDs - 1) of 
 							std_logic_vector(31 downto 0);
 	signal	led_regfile		:	led_regfile_t	:= (others =>x"00000000");
 	signal 	dradd	 		: 	std_logic_vector(AddrWidth - 1 downto 0);
-    signal 	readout 	: 	std_logic_vector(BusWidth - 1 downto 0); 
+    signal 	readout 		: 	std_logic_vector(BusWidth - 1 downto 0); 
+	signal	leds_pwm		:	std_logic_vector(NumLEDs - 1 downto 0);	
 	---------------------------------------------------------------------------
 begin
 	
@@ -97,7 +98,14 @@ begin
 	
 	drive_gen: 
 	for I in 0 to NumLEDs - 1 generate
-		leds(I)		<=	led_regfile(I)(0);
+		U0_PWM: entity work.PWM
+		port map (
+			i_clk			=> 	CLK,       	
+		    i_rstb      	=>	RST_N,
+		    i_pwm_width 	=>	led_regfile(I)(31 downto 16),
+		    o_pwm       	=> 	leds_pwm(I)	
+		);
+		leds(I)		<=	led_regfile(I)(0) and leds_pwm(I);
 	end generate drive_gen;
 
 end behavior;
