@@ -22,8 +22,9 @@ use work.parity.all;
 entity pci33_bridge is
 	generic 
 	(
-		BusWidth: integer := 32;
-		AddrWidth: integer := 16
+		BusWidth	: integer 						:= 32;
+		AddrWidth	: integer 						:= 16;
+		FW_VER		: std_logic_vector(31 downto 0) := (others => '0')
 	);    
 	port 
 	( 
@@ -81,13 +82,15 @@ architecture behavioral of pci33_bridge is
 	constant DIDVIDAddr 		: std_logic_vector(7 downto 0) := x"00";	
 	constant StatComAddr 		: std_logic_vector(7 downto 0) := x"04";
 	constant ClassRevAddr 		: std_logic_vector(7 downto 0) := x"08"; 
-	constant ClassRev 			: std_logic_vector(31 downto 0) := x"11000002";  -- data acq & rev 1                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+	constant ClassRev 			: std_logic_vector(31 downto 0) := x"11000002";  -- data acq & rev 2                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
 	--constant ClassRev 		: std_logic_vector(31 downto 0) := x"07010000";    -- parallel port                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
 	constant MiscAddr 			: std_logic_vector(7 downto 0) := x"0C";
 	constant MiscReg 			: std_logic_vector(31 downto 0) := x"00000000";
 	constant SSIDAddr 			: std_logic_vector(7 downto 0) := x"2C";
 	constant BAR0Addr 			: std_logic_vector(7 downto 0) := x"10";
 	constant IntAddr 			: std_logic_vector(7 downto 0) := x"3C";
+	constant FVAddr				: std_logic_vector(7 downto 0) := x"40";		-- fw version 
+	constant FW_version			: std_logic_vector(31 downto 0)	:= FW_VER;		
 	constant DIDVID 			: std_logic_vector(31 downto 0) := x"060010EE";		
 	constant SSID 				: std_logic_vector(31 downto 0) := x"060010EE";
 	
@@ -361,7 +364,8 @@ begin
 				when MiscAddr		=>	D <= MiscReg;
 				when BAR0Addr		=>	D <= BAR0Reg;
 				when SSIDAddr		=>	D <= SSID;
-				when IntAddr		=> 	D <= IntReg;	
+				when IntAddr		=> 	D <= IntReg;
+				when FVAddr			=>	D <= FW_version;
 				when others			=>	D <= (others => '0'); 	-- all unused config space reads as 0s
 			end case;
 		end if;		

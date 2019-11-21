@@ -17,16 +17,19 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 USE IEEE.NUMERIC_STD.ALL;
+--********************************************************
 use work.parity.all;
+use work.board_config_pkg.ALL;
 
 
 entity epci_top is
 	generic 
 	(
-		BusWidth	: integer 	:= 32;
-		AddrWidth	: integer 	:= 16;
-		GPIOWidth	: integer	:= 4;
-		LEDWidth	: integer	:= 3
+		BusWidth	: integer 						:= 32;
+		AddrWidth	: integer 						:= 16;
+		GPIOWidth	: integer						:= 4;
+		LEDWidth	: integer						:= 3;
+		FW_VER		: std_logic_vector(31 downto 0)	:=	EPCI_FW_VER
 	);    
 	port 
 	( 
@@ -138,7 +141,8 @@ begin
 	U0_PCI : entity work.pci33_bridge
 	generic map (
 		BusWidth	=>	BusWidth,
-		AddrWidth	=>	AddrWidth
+		AddrWidth	=>	AddrWidth,
+		FW_VER		=>	FW_VER
 	)
 	port map(
 		-------------------------------------------------------------
