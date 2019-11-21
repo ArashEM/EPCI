@@ -22,6 +22,8 @@ const  unsigned EPCI_MAX_DEV	= 1;
 const  char	EPCI_DEV_NAME[]	= "epci-mem";
 const  unsigned EPCI_MEM_BAR	= 0;
 
+const  int	EPCI_FW_VER	= 0x40;	/* fw version offset */
+
 /**
 *	module parameters
 */
@@ -144,8 +146,19 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 	struct	epci_priv  *priv;
 	dev_t	devno = 0;
 	int	ret = 0;
+	u32	fw_ver = 0;
+	u8	fw_ver_maj,fw_ver_min = 0;
+	u16	fw_build = 0;
 
 	dev_info(&dev->dev, "probing pci device %#04x:%#04x\n",dev->vendor, dev->device);
+	
+	/* get fw version from device maj.min.build */
+	pci_read_config_dword(dev, EPCI_FW_VER, &fw_ver);
+	fw_ver_maj = (fw_ver >> 24 ) & 0xFF;
+	fw_ver_min = (fw_ver >> 16 ) & 0xFF;
+	fw_build   = (fw_ver       ) & 0xFFFF;
+	dev_info(&dev->dev, "FW:%d.%d #%d\n",fw_ver_maj,fw_ver_min, fw_build);
+
 	if(!mem_len) {
 		dev_err(&dev->dev, "memory length can not be 0\n");
 		return -EINVAL;
