@@ -19,7 +19,7 @@ First of all, main idea of board came from **MESA-5I25** board from [mesanet.com
 - Universal PCI interface (5v0, 3v3)
 - XC6SLX9-2TQG144I
 - DP83848 (Ethernet PHY with MII interface to FPGA)
-- W25Q32FVSSIG (32Mb x4 flash)
+- W25Q64FV (32Mb x4 flash)
 - FT2232H (As USB to serial and JTAG interface)
 
 # Development 
