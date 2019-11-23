@@ -56,9 +56,9 @@ struct epci_priv {
 };
 
 
-/**
-*	epci file operations 
-*/
+/* =================================================== 	*/
+/*	file operatinos 					*/
+/* =================================================== 	*/
 static ssize_t 
 epci_read(struct file * file, char __user * buf, size_t count, loff_t *offset)
 {
@@ -140,6 +140,16 @@ static const struct file_operations epci_fops = {
 	.release = epci_release,
 };
 
+/* =================================================== 	*/
+/*	LED operatinos 					*/
+/* =================================================== 	*/
+static void epci_led_brightness_set(struct led_classdev *led_cdev, 
+	enum led_brightness brightnes)
+{
+	
+}
+
+
 /**
 *	pci id table
 */
@@ -161,6 +171,7 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 	u32	fw_ver = 0;
 	u8	fw_ver_maj,fw_ver_min = 0;
 	u16	fw_build = 0;
+	struct  epci_led *leds = NULL;
 
 	dev_info(&dev->dev, "probing pci device %#04x:%#04x\n",dev->vendor, dev->device);
 	
@@ -235,9 +246,30 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 
 	priv->pdev  = dev; 		/* soft link for file operation use */
 	pci_set_drvdata(dev, priv);	/* soft link for deiver model usage */
+
+	/* led device */
+	leds = devm_kzalloc(&dev->dev, sizeof(*leds),GFP_KERNEL);
+	if(!leds) {
+		ret = -ENOMEM;
+		goto error_led_alloc;
+	}	
 	
+	priv->leds = leds;
+	snprintf(leds->name, sizeof(leds->name),"epci-led:red");
+	leds->led_cdev.name = leds->name;
+	leds->led_cdev.brightness_set = epci_led_brightness_set;
+
+	ret = led_classdev_register(&dev->dev, &leds->led_cdev);
+	if(ret < 0) {
+		dev_err(&dev->dev, 
+		"led class device registeration failed for %s\n", EPCI_DEV_NAME);
+		goto error_led_alloc;
+	} 
+
 	return 0;
 
+error_led_alloc:
+	cdev_del(&priv->cdev);
 error_cdev:
 	unregister_chrdev_region(devno, EPCI_MAX_DEV);
 error_alloc:
@@ -257,6 +289,7 @@ void epci_remove(struct pci_dev *dev)
 {
 	struct epci_priv * priv = NULL;
 
+	led_classdev_unregister(&priv->leds->led_cdev);
 	priv = pci_get_drvdata(dev);
 	pci_iounmap(dev, priv->base);
 	pci_release_region(dev, EPCI_MEM_BAR);
