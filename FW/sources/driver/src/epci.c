@@ -13,7 +13,7 @@
 #include <linux/io.h>
 #include <linux/moduleparam.h>
 #include <linux/uaccess.h>
-
+#include <linux/leds.h>
 
 /**
 *	constants
@@ -32,6 +32,16 @@ module_param(mem_len, int, S_IRUGO);
 MODULE_PARM_DESC(mem_len, "Lenght of memory part in EPCI");
 
 /**
+*	EPCI leds private data
+*/
+struct epci_led {
+	char   	name[32];
+	int	led_num;			/* currently 0 to 2 */
+	struct 	led_classdev led_cdev;		/* inherit led class device */
+	enum 	led_brightness brightness;
+};
+
+/**
 *	ecpi private data structure
 */
 struct epci_priv {
@@ -41,6 +51,8 @@ struct epci_priv {
 	unsigned long	memaddr;	/* physical address */
 	void __iomem	*base;		/* memory mapped address */
 	unsigned long	size;		/* memory lenght of EPCI */
+
+	struct epci_led *leds;
 };
 
 
@@ -170,22 +182,6 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 
 	priv->size = mem_len;	/* set memory length */
 
-	ret = alloc_chrdev_region(&devno, 0, EPCI_MAX_DEV, EPCI_DEV_NAME);
-	if(ret < 0) {
-		dev_err(&dev->dev, "alloc_chrdev_region() failed for %s\n",EPCI_DEV_NAME);
-		goto error_alloc;
-	}
-
-	cdev_init(&priv->cdev, &epci_fops);
-	priv->cdev.owner = THIS_MODULE;
-	ret = cdev_add(&priv->cdev, devno, EPCI_MAX_DEV);
-	if(ret < 0) {
-		dev_err(&dev->dev, "cdev_add() failed for %s\n",EPCI_DEV_NAME);
-		goto error_cdev;
-	}		
-
-	priv->pdev  = dev; 		/* soft link for file operation use */
-	pci_set_drvdata(dev, priv);	/* soft link for deiver model usage */
 	
 	ret = pci_enable_device(dev);
 	if(ret < 0) {
@@ -219,16 +215,38 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 		goto error_map;
 	}
 	
+	/*--------------------------------------------------------------*/
+	/* PCI is available now. time to register in various frameworks */
+	/*--------------------------------------------------------------*/
+	/* char device  */
+	ret = alloc_chrdev_region(&devno, 0, EPCI_MAX_DEV, EPCI_DEV_NAME);
+	if(ret < 0) {
+		dev_err(&dev->dev, "alloc_chrdev_region() failed for %s\n",EPCI_DEV_NAME);
+		goto error_alloc;
+	}
+
+	cdev_init(&priv->cdev, &epci_fops);
+	priv->cdev.owner = THIS_MODULE;
+	ret = cdev_add(&priv->cdev, devno, EPCI_MAX_DEV);
+	if(ret < 0) {
+		dev_err(&dev->dev, "cdev_add() failed for %s\n",EPCI_DEV_NAME);
+		goto error_cdev;
+	}		
+
+	priv->pdev  = dev; 		/* soft link for file operation use */
+	pci_set_drvdata(dev, priv);	/* soft link for deiver model usage */
+	
 	return 0;
 
-error_map:
-	pci_release_region(dev, EPCI_MEM_BAR);
-error_pci:
-	cdev_del(&priv->cdev);
 error_cdev:
 	unregister_chrdev_region(devno, EPCI_MAX_DEV);
 error_alloc:
+	pci_iounmap(dev, priv->base);
+error_map:
+	pci_release_region(dev, EPCI_MEM_BAR);
+error_pci:
 	/* devm_kfree(&dev->dev, priv); */
+
 	return ret;
 }
 
