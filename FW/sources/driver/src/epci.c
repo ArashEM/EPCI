@@ -34,11 +34,14 @@ MODULE_PARM_DESC(mem_len, "Lenght of memory part in EPCI");
 /**
 *	EPCI leds private data
 */
+struct epci_priv;
+
 struct epci_led {
 	char   	name[32];
 	int	led_num;			/* currently 0 to 2 */
 	struct 	led_classdev led_cdev;		/* inherit led class device */
 	enum 	led_brightness brightness;
+	struct  epci_priv *chip;		/* soft link */
 };
 
 /**
@@ -144,9 +147,23 @@ static const struct file_operations epci_fops = {
 /*	LED operatinos 					*/
 /* =================================================== 	*/
 static void epci_led_brightness_set(struct led_classdev *led_cdev, 
-	enum led_brightness brightnes)
+	enum led_brightness brightness)
 {
+	struct epci_led *led = NULL;
 	
+	led = container_of(led_cdev, struct epci_led, led_cdev);
+
+	switch(brightness) {
+	case LED_FULL:
+		iowrite8(0x01, led->chip->base + 0x8014);
+		break;
+	case LED_OFF:
+		iowrite8(0x00, led->chip->base + 0x8014);
+		break;
+	default:
+		iowrite8(0x00, led->chip->base + 0x8014);
+		break;
+	}
 }
 
 
@@ -255,9 +272,12 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 	}	
 	
 	priv->leds = leds;
-	snprintf(leds->name, sizeof(leds->name),"epci-led:red");
+	snprintf(leds->name, sizeof(leds->name),"epci-led:green");
 	leds->led_cdev.name = leds->name;
 	leds->led_cdev.brightness_set = epci_led_brightness_set;
+	leds->chip = priv;
+
+	iowrite32(0xFFFF0000, priv->base + 0x8014);	/* set PWM to max */
 
 	ret = led_classdev_register(&dev->dev, &leds->led_cdev);
 	if(ret < 0) {
@@ -289,8 +309,8 @@ void epci_remove(struct pci_dev *dev)
 {
 	struct epci_priv * priv = NULL;
 
-	led_classdev_unregister(&priv->leds->led_cdev);
 	priv = pci_get_drvdata(dev);
+	led_classdev_unregister(&priv->leds->led_cdev);
 	pci_iounmap(dev, priv->base);
 	pci_release_region(dev, EPCI_MEM_BAR);
 	cdev_del(&priv->cdev);
