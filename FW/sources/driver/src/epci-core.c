@@ -14,6 +14,7 @@
 #include <linux/moduleparam.h>
 #include <linux/uaccess.h>
 #include <linux/leds.h>
+#include "epci.h"
 
 /**
 *	constants
@@ -30,33 +31,6 @@ const  int	EPCI_FW_VER	= 0x40;	/* fw version offset */
 static int	mem_len = 256;	/*how many bytes is available in BAR of EPCI*/
 module_param(mem_len, int, S_IRUGO);
 MODULE_PARM_DESC(mem_len, "Lenght of memory part in EPCI");
-
-/**
-*	EPCI leds private data
-*/
-struct epci_priv;
-
-struct epci_led {
-	char   	name[32];
-	int	led_num;			/* currently 0 to 2 */
-	struct 	led_classdev led_cdev;		/* inherit led class device */
-	enum 	led_brightness brightness;
-	struct  epci_priv *chip;		/* soft link */
-};
-
-/**
-*	ecpi private data structure
-*/
-struct epci_priv {
-	struct cdev	cdev;		/* inherit char device */
-	struct pci_dev	*pdev;   	/* soft link to pci device */
-
-	unsigned long	memaddr;	/* physical address */
-	void __iomem	*base;		/* memory mapped address */
-	unsigned long	size;		/* memory lenght of EPCI */
-
-	struct epci_led *leds;
-};
 
 
 /* =================================================== 	*/
