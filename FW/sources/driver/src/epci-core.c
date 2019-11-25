@@ -117,29 +117,6 @@ static const struct file_operations epci_fops = {
 	.release = epci_release,
 };
 
-/* =================================================== 	*/
-/*	LED operatinos 					*/
-/* =================================================== 	*/
-static void epci_led_brightness_set(struct led_classdev *led_cdev, 
-	enum led_brightness brightness)
-{
-	struct epci_led *led = NULL;
-	
-	led = container_of(led_cdev, struct epci_led, led_cdev);
-
-	switch(brightness) {
-	case LED_FULL:
-		iowrite8(0x01, led->chip->base + 0x8014);
-		break;
-	case LED_OFF:
-		iowrite8(0x00, led->chip->base + 0x8014);
-		break;
-	default:
-		iowrite8(0x00, led->chip->base + 0x8014);
-		break;
-	}
-}
-
 
 /**
 *	pci id table
@@ -162,7 +139,6 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 	u32	fw_ver = 0;
 	u8	fw_ver_maj,fw_ver_min = 0;
 	u16	fw_build = 0;
-	struct  epci_led *leds = NULL;
 
 	dev_info(&dev->dev, "probing pci device %#04x:%#04x\n",dev->vendor, dev->device);
 	
@@ -239,26 +215,10 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 	pci_set_drvdata(dev, priv);	/* soft link for deiver model usage */
 
 	/* led device */
-	leds = devm_kzalloc(&dev->dev, sizeof(*leds),GFP_KERNEL);
-	if(!leds) {
-		ret = -ENOMEM;
+	ret = epci_leds_register(priv);
+	if(ret < 0) 
 		goto error_led_alloc;
-	}	
-	
-	priv->leds = leds;
-	snprintf(leds->name, sizeof(leds->name),"epci-led:green");
-	leds->led_cdev.name = leds->name;
-	leds->led_cdev.brightness_set = epci_led_brightness_set;
-	leds->chip = priv;
 
-	iowrite32(0xFFFF0000, priv->base + 0x8014);	/* set PWM to max */
-
-	ret = led_classdev_register(&dev->dev, &leds->led_cdev);
-	if(ret < 0) {
-		dev_err(&dev->dev, 
-		"led class device registeration failed for %s\n", EPCI_DEV_NAME);
-		goto error_led_alloc;
-	} 
 
 	return 0;
 
@@ -284,7 +244,7 @@ void epci_remove(struct pci_dev *dev)
 	struct epci_priv * priv = NULL;
 
 	priv = pci_get_drvdata(dev);
-	led_classdev_unregister(&priv->leds->led_cdev);
+	epci_leds_unregister(priv);
 	pci_iounmap(dev, priv->base);
 	pci_release_region(dev, EPCI_MEM_BAR);
 	cdev_del(&priv->cdev);

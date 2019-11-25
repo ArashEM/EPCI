@@ -6,6 +6,9 @@
 #ifndef _EPCI_H_INCLUDED
 #define _EPCI_H_INCLUDED
 
+#include <linux/cdev.h>
+#include <linux/leds.h>
+
 /**
 *	EPCI leds private data
 */
@@ -32,5 +35,13 @@ struct epci_priv {
 
 	struct epci_led *leds;
 };
+
+
+/*
+*	register board leds
+*/
+int  epci_leds_register(struct epci_priv * board);
+void epci_leds_unregister(struct epci_priv * board);
+
 
 #endif /* _EPCI_H_INCLUDED */
