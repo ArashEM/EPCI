@@ -10,6 +10,15 @@
 #include <linux/leds.h>
 
 /**
+*	epci board information
+*	describe memory map of EPCI board
+*/
+struct epci_board_info {
+	unsigned long  mem_offset;	/* SRAM base offset */
+	unsigned long  led_offset;	/* LED controller   */
+};
+
+/**
 *	EPCI leds private data
 */
 struct epci_priv;
@@ -32,6 +41,9 @@ struct epci_priv {
 	unsigned long	memaddr;	/* physical address */
 	void __iomem	*base;		/* memory mapped address */
 	unsigned long	size;		/* memory lenght of EPCI */
+
+	/* memory map offset of each peripheral */
+	const struct epci_board_info *info;	
 
 	struct epci_led *leds;
 };

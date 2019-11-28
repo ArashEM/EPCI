@@ -25,6 +25,18 @@ const  unsigned EPCI_MEM_BAR	= 0;
 
 const  int	EPCI_FW_VER	= 0x40;	/* fw version offset */
 
+enum epci_rev {
+	epci_v1,
+	epci_v2,
+};
+
+const struct epci_board_info epci_board_info[] = {
+	[epci_v1] = {
+		.mem_offset = 0x0000,
+		.led_offset = 0x8010,
+	},
+};
+
 /**
 *	module parameters
 */
@@ -158,9 +170,11 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 	if(!priv)
 		return -ENOMEM;
 
-	priv->size = mem_len;	/* set memory length */
+	priv->size = mem_len;		/* set memory length */
+	priv->pdev  = dev; 		/* soft link for file operation use */
+	pci_set_drvdata(dev, priv);	/* soft link for deiver model usage */
+	priv->info = &epci_board_info[epci_v1]; /* V1.00 memory map */
 
-	
 	ret = pci_enable_device(dev);
 	if(ret < 0) {
 		dev_err(&dev->dev, "pci_enable_device() filed for %s\n",EPCI_DEV_NAME);
@@ -211,8 +225,6 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 		goto error_cdev;
 	}		
 
-	priv->pdev  = dev; 		/* soft link for file operation use */
-	pci_set_drvdata(dev, priv);	/* soft link for deiver model usage */
 
 	/* led device */
 	ret = epci_leds_register(priv);
