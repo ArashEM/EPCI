@@ -28,7 +28,7 @@ struct epci_led {
 	int	led_num;			/* currently 0 to 2 */
 	struct 	led_classdev led_cdev;		/* inherit led class device */
 	enum 	led_brightness brightness;
-	struct  epci_priv *chip;		/* soft link */
+	struct  epci_priv *board;		/* soft link */
 };
 
 /**
