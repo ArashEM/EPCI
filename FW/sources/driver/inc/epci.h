@@ -16,6 +16,7 @@
 struct epci_board_info {
 	unsigned long  mem_offset;	/* SRAM base offset */
 	unsigned long  led_offset;	/* LED controller   */
+	struct led_platform_data *pdata;
 };
 
 /**
