@@ -56,5 +56,11 @@ struct epci_priv {
 int  epci_leds_register(struct epci_priv * board);
 void epci_leds_unregister(struct epci_priv * board);
 
+/*
+*	register board memory as file
+*/
+int  epci_mem_register(struct epci_priv * board);
+void epci_mem_unregister(struct epci_priv * board);
+
 
 #endif /* _EPCI_H_INCLUDED */

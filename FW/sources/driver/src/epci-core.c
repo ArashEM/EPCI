@@ -5,22 +5,16 @@
 */
 #include <linux/init.h>
 #include <linux/kernel.h>
-#include <linux/fs.h>
 #include <linux/module.h>
 #include <linux/pci.h>
-#include <linux/cdev.h>
 #include <linux/errno.h>
 #include <linux/io.h>
-#include <linux/moduleparam.h>
-#include <linux/uaccess.h>
-#include <linux/leds.h>
 #include "epci.h"
 
 /**
 *	constants
 */
-const  unsigned EPCI_MAX_DEV	= 1;
-const  char	EPCI_DEV_NAME[]	= "epci-mem";
+const  char	EPCI_DEV_NAME[]	= "epci-board";
 const  unsigned EPCI_MEM_BAR	= 0;
 
 const  int	EPCI_FW_VER	= 0x40;	/* fw version offset */
@@ -35,98 +29,6 @@ const struct epci_board_info epci_board_info[] = {
 		.mem_offset = 0x0000,
 		.led_offset = 0x8010,
 	},
-};
-
-/**
-*	module parameters
-*/
-static int	mem_len = 256;	/*how many bytes is available in BAR of EPCI*/
-module_param(mem_len, int, S_IRUGO);
-MODULE_PARM_DESC(mem_len, "Lenght of memory part in EPCI");
-
-
-/* =================================================== 	*/
-/*	file operatinos 					*/
-/* =================================================== 	*/
-static ssize_t 
-epci_read(struct file * file, char __user * buf, size_t count, loff_t *offset)
-{
-	struct epci_priv * priv = NULL;
-	ssize_t	ret = 0;
-
-	priv = file->private_data;
-
-	if(*offset > priv->size)
-		goto out;
-	if(*offset + count > priv->size)
-		count = priv->size - *offset;
-
-	if(copy_to_user(buf, priv->base, count)) {
-		ret = -EFAULT;
-		goto out;
-	}
-	
-	*offset += count;
-	ret = count;
-out:
-	return ret;
-	
-}
-
-static ssize_t 
-epci_write(struct file * file, const char __user * buf, size_t count, loff_t *offset)
-{
-	struct epci_priv * priv = NULL;
-	ssize_t	ret = -ENOMEM;
-
-	priv = file->private_data;
-	
-	if(count > priv->size)
-		count = priv->size;
-	
-	if(copy_from_user(priv->base, buf, count)) {
-		ret = -EFAULT;
-		goto out;
-	}
-	
-	*offset += count;
-	ret = count;
-out:
-	return ret;
-}
-
-static loff_t 
-epci_llseek(struct file * file, loff_t offset, int whence)
-{
-	struct epci_priv * priv = NULL;
-	priv = file->private_data;
-	
-	return 0;
-}
-
-static int epci_open(struct inode * inode, struct file * file)
-{
-	struct epci_priv *priv = NULL;
-
-	/* resolve private data*/
-	priv = container_of(inode->i_cdev , struct epci_priv, cdev);
-	file->private_data = priv;
-
-	return 0;
-}
-
-static int epci_release(struct inode * inode, struct file * file)
-{
-	return 0;
-}
-
-static const struct file_operations epci_fops = {
-	.owner   = THIS_MODULE,
-	.read    = epci_read,
-	.write   = epci_write,
-	.llseek  = epci_llseek,
-	.open    = epci_open,
-	.release = epci_release,
 };
 
 
@@ -146,7 +48,7 @@ MODULE_DEVICE_TABLE(pci, epci_pci_tbl);
 static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 {
 	struct	epci_priv  *priv;
-	dev_t	devno = 0;
+	// dev_t	devno = 0;
 	int	ret = 0;
 	u32	fw_ver = 0;
 	u8	fw_ver_maj,fw_ver_min = 0;
@@ -161,16 +63,10 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 	fw_build   = (fw_ver       ) & 0xFFFF;
 	dev_info(&dev->dev, "FW:%d.%d #%d\n",fw_ver_maj,fw_ver_min, fw_build);
 
-	if(!mem_len) {
-		dev_err(&dev->dev, "memory length can not be 0\n");
-		return -EINVAL;
-	}
-
 	priv = devm_kzalloc(&dev->dev, sizeof(*priv),GFP_KERNEL);
 	if(!priv)
 		return -ENOMEM;
 
-	priv->size = mem_len;		/* set memory length */
 	priv->pdev  = dev; 		/* soft link for file operation use */
 	pci_set_drvdata(dev, priv);	/* soft link for deiver model usage */
 	priv->info = &epci_board_info[epci_v1]; /* V1.00 memory map */
@@ -210,35 +106,21 @@ static int epci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 	/*--------------------------------------------------------------*/
 	/* PCI is available now. time to register in various frameworks */
 	/*--------------------------------------------------------------*/
-	/* char device  */
-	ret = alloc_chrdev_region(&devno, 0, EPCI_MAX_DEV, EPCI_DEV_NAME);
-	if(ret < 0) {
-		dev_err(&dev->dev, "alloc_chrdev_region() failed for %s\n",EPCI_DEV_NAME);
-		goto error_alloc;
-	}
-
-	cdev_init(&priv->cdev, &epci_fops);
-	priv->cdev.owner = THIS_MODULE;
-	ret = cdev_add(&priv->cdev, devno, EPCI_MAX_DEV);
-	if(ret < 0) {
-		dev_err(&dev->dev, "cdev_add() failed for %s\n",EPCI_DEV_NAME);
-		goto error_cdev;
-	}		
-
+	// /* char device  */
+	ret = epci_mem_register(priv);
+	if(ret < 0)
+		goto error_mem;
 
 	/* led device */
 	ret = epci_leds_register(priv);
 	if(ret < 0) 
 		goto error_led_alloc;
 
-
 	return 0;
 
 error_led_alloc:
-	cdev_del(&priv->cdev);
-error_cdev:
-	unregister_chrdev_region(devno, EPCI_MAX_DEV);
-error_alloc:
+	epci_mem_unregister(priv);
+error_mem:
 	pci_iounmap(dev, priv->base);
 error_map:
 	pci_release_region(dev, EPCI_MEM_BAR);
@@ -254,14 +136,12 @@ error_pci:
 void epci_remove(struct pci_dev *dev)
 {
 	struct epci_priv * priv = NULL;
-
 	priv = pci_get_drvdata(dev);
+	
 	epci_leds_unregister(priv);
+	epci_mem_unregister(priv);
 	pci_iounmap(dev, priv->base);
 	pci_release_region(dev, EPCI_MEM_BAR);
-	cdev_del(&priv->cdev);
-	/* cdev had dev_t internaly, so we use it in unregisteration */
-	unregister_chrdev_region(priv->cdev.dev, EPCI_MAX_DEV);
 	/* by using devm_ allocation function, there is no need to free */
 	/* devm_kfree(&dev->dev, priv); */
 }
@@ -271,7 +151,7 @@ void epci_remove(struct pci_dev *dev)
 *	driver main structure
 */
 static struct pci_driver epci_driver = {
-	.name      =  "epci",
+	.name      =  EPCI_DEV_NAME,
 	.probe     =  epci_probe,
 	.remove    =  epci_remove,
 	.id_table  =  epci_pci_tbl,
