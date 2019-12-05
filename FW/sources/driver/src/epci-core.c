@@ -8,7 +8,6 @@
 #include <linux/module.h>
 #include <linux/pci.h>
 #include <linux/errno.h>
-#include <linux/io.h>
 #include "epci.h"
 
 /**

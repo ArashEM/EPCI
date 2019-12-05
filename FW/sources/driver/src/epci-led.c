@@ -52,8 +52,8 @@ static void epci_set_pwm(struct epci_led *led)
 static void epci_led_brightness_set(struct led_classdev *led_cdev, 
 	enum led_brightness brightness)
 {
-	struct epci_led *led = NULL;
-	led = container_of(led_cdev, struct epci_led, led_cdev);
+	struct epci_led *led = 
+		container_of(led_cdev, struct epci_led, led_cdev);
 	unsigned long  offset  = (led->led_num) << 2;
 	void __iomem *led_addr = led->board->base + 		
 							led->board->info->led_offset +
