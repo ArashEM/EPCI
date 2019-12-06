@@ -43,7 +43,7 @@ epci_read(struct file * file, char __user * buf, size_t count, loff_t *offset)
 	if(*offset + count > priv->size)
 		count = priv->size - *offset;
 
-	if(copy_to_user(buf, priv->base, count)) {
+	if(copy_to_user(buf, priv->base + *offset, count)) {
 		ret = -EFAULT;
 		goto out;
 	}
@@ -63,10 +63,12 @@ epci_write(struct file * file, const char __user * buf, size_t count, loff_t *of
 
 	priv = file->private_data;
 	
-	if(count > priv->size)
-		count = priv->size;
+	if(*offset > priv->size)
+		goto out;
+	if(*offset + count > priv->size)
+		count = priv->size - *offset;
 	
-	if(copy_from_user(priv->base, buf, count)) {
+	if(copy_from_user(priv->base + *offset, buf, count)) {
 		ret = -EFAULT;
 		goto out;
 	}
