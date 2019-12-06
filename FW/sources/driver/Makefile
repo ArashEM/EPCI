@@ -2,6 +2,7 @@ INCLUDE=inc
 SOURCE=src
 TARGET=epci
 OUTPUT=build
+FLAGS= -g -DDEBUG
 
 SOURCES=$(wildcard $(SOURCE)/*.c)
 
@@ -15,7 +16,9 @@ $(OUTPUT)/%: $(SOURCE)/%
 
 # Generate a Makefile with the needed obj-m and mymodule-objs set
 $(OUTPUT)/Makefile:
-	@echo "obj-m += $(TARGET).o\nEXTRA_CFLAGS=-I$(PWD)/$(INCLUDE)\n$(TARGET)-objs := $(subst $(TARGET).o,, $(subst .c,.o,$(subst $(SOURCE)/,,$(SOURCES))))" > $@
+	@echo "obj-m += $(TARGET).o" > $@
+	@echo "EXTRA_CFLAGS=-I$(PWD)/$(INCLUDE) $(FLAGS)" >> $@
+	@echo "$(TARGET)-objs := $(subst $(TARGET).o,, $(subst .c,.o,$(subst $(SOURCE)/,,$(SOURCES))))" >> $@
 
 clean:
 	@rm -rf $(OUTPUT)
