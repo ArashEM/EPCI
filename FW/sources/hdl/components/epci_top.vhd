@@ -89,7 +89,8 @@ architecture behavioral of epci_top is
 	-- Address Map
 	--###########################################################
 	--	(0		, 0x8000)	:	BRAM 	(8K x 32 bit)
-	--	(0x8000	, 0x8040)	:	GPIO	(8	x 32 bit)
+	--	(0x8000	, 0x8010)	:	GPIO	(4	x 32 bit)
+	--	(0x8010	, 0x8020)	:	LEDs	(4	x 32 bit)
 	--###########################################################
 	
 	constant	BRAM_ADDR_W	:	integer		
