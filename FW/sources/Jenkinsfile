@@ -22,16 +22,19 @@ pipeline{
         }
             steps {
                 git 'https://github.com/ArashEM/EPCI.git'
-                sh 'cd FW/sources/driver'
-                sh 'make clean'
-                sh 'make'
-                archive 'build/*.ko'
+                dir('FW/sources/driver'){
+                    sh 'make clean'
+                    sh 'make'
+                }
+                archiveArtifacts 'FW/sources/driver/build/*.ko'
             }   
         }
     }
     post {
 		cleanup {
-			deleteDir()
+		        node('dh-01'){
+		            deleteDir()
+		        }
 		}
 	}
 }
