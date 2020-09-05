@@ -1,3 +1,4 @@
+#!groovy
 //********************************************************************************************                                                        
 //	  ______                                __                ________  __       __ 
 //	 /      \                              |  \              |        \|  \     /  \
@@ -20,7 +21,7 @@ pipeline{
             label 'dh-01'
         }
             steps {
-                sh 'git clone https://github.com/ArashEM/EPCI.git --depth=1'
+                git 'https://github.com/ArashEM/EPCI.git'
                 sh 'cd FW/sources/driver'
                 sh 'make clean'
                 sh 'make'

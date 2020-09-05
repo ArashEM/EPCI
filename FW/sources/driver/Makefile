@@ -12,7 +12,7 @@ all: $(subst $(SOURCE),$(OUTPUT),$(SOURCES)) $(OUTPUT)/Makefile
 
 # Create a symlink from src to bin
 $(OUTPUT)/%: $(SOURCE)/%
-	@mkdir $(OUTPUT)
+	@mkdir -p $(OUTPUT)
 	@ln -s ../$< $@
 
 # Generate a Makefile with the needed obj-m and mymodule-objs set
