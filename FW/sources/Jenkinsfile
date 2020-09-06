@@ -16,8 +16,9 @@
 pipeline{
     agent none 
     stages {
-        stage('Build'){
-         agent {
+		// Build EPCI device driver 
+        stage('build-driver'){
+        agent {
             label 'dh-01'
         }
             steps {
@@ -29,12 +30,31 @@ pipeline{
                 archiveArtifacts 'FW/sources/driver/build/*.ko'
             }   
         }
-    }
-    post {
-		cleanup {
-		        node('dh-01'){
-		            deleteDir()
-		        }
+		
+		// Build EPCI firmware for it's FPGA
+		stage('synthesis-fw'){
+		agent {
+			label 'ise-01'
 		}
-	}
+			steps{
+				git 'https://github.com/ArashEM/EPCI.git'
+                dir('FW/sources/hdl'){
+                    sh 'make clean'
+                    sh 'make'
+                }
+                archiveArtifacts '/FW/sources/hdl/build/*.bit'
+                archiveArtifacts '/FW/sources/hdl/build/*.mcs'
+			}
+		}
+    }
+    //post {
+	//	cleanup {
+	//	        node('dh-01'){
+	//	            deleteDir()
+	//	        }
+	//			node('ise-01'){
+	//				deleteDir()
+	//			}
+	//	}
+	//}
 }
