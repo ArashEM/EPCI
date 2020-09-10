@@ -15,46 +15,66 @@
 //********************************************************************************************
 pipeline{
     agent none 
-    stages {
-		// Build EPCI device driver 
-        stage('build-driver'){
-        agent {
-            label 'dh-01'
-        }
+    stages{
+        stage('checkout'){
+            agent {
+                label 'master'
+            }
             steps {
-                git 'https://github.com/ArashEM/EPCI.git'
+				checkout([$class: 'GitSCM',
+					branches: [[name: '*/master']],
+					extensions: [[$class: 'CloneOption', timeout: 120]],
+					gitTool: 'Default', 
+					userRemoteConfigs: [[url: 'https://github.com/ArashEM/EPCI.git']]
+				])
+                stash includes: 'FW/sources/**', name: 'firmware'
+            }
+        }
+        stage('build'){
+            agent {
+                label 'dh-01'
+            }
+            steps {
+                unstash 'firmware'
                 dir('FW/sources/driver'){
                     sh 'make clean'
                     sh 'make'
                 }
-                archiveArtifacts 'FW/sources/driver/build/*.ko'
-            }   
+            }
+			post {
+				success {
+					archiveArtifacts 'FW/sources/driver/build/*.ko'
+				}
+				cleanup {
+					cleanWs()
+				}
+			}
+            
         }
-		
-		// Build EPCI firmware for it's FPGA
-		stage('synthesis-fw'){
-		agent {
-			label 'ise-01'
-		}
-			steps{
-				git 'https://github.com/ArashEM/EPCI.git'
+        
+        stage('synthesis') {
+            agent {
+                label 'ise-01'
+            }
+            steps {
+                unstash 'firmware'
                 dir('FW/sources/hdl'){
                     sh 'make clean'
                     sh 'make mcs'
                 }
-                archiveArtifacts '/FW/sources/hdl/build/*.bit'
-                archiveArtifacts '/FW/sources/hdl/build/*.mcs'
+            }
+			post {
+				success {
+					archiveArtifacts '/FW/sources/hdl/build/*.bit'
+					archiveArtifacts '/FW/sources/hdl/build/*.mcs'
+				}
+				cleanup {
+					cleanWs()
+				}
 			}
-		}
+        }
+        
     }
-    //post {
-	//	cleanup {
-	//	        node('dh-01'){
-	//	            deleteDir()
-	//	        }
-	//			node('ise-01'){
-	//				deleteDir()
-	//			}
-	//	}
-	//}
+    
+}
 }
