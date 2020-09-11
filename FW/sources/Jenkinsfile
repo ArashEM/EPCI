@@ -30,50 +30,54 @@ pipeline{
                 stash includes: 'FW/sources/**', name: 'firmware'
             }
         }
-        stage('build'){
-            agent {
-                label 'dh-01'
-            }
-            steps {
-                unstash 'firmware'
-                dir('FW/sources/driver'){
-                    sh 'make clean'
-                    sh 'make'
-                }
-            }
-			post {
-				success {
-					archiveArtifacts 'FW/sources/driver/build/*.ko'
+		stage('parallel build')
+		{
+			parallel {
+				stage('build'){
+					agent {
+						label 'dh-01'
+					}
+					steps {
+						unstash 'firmware'
+						dir('FW/sources/driver'){
+							sh 'make clean'
+							sh 'make'
+						}
+					}
+					post {
+						success {
+							archiveArtifacts 'FW/sources/driver/build/*.ko'
+						}
+						cleanup {
+							cleanWs()
+						}
+					}
+					
 				}
-				cleanup {
-					cleanWs()
+			
+				stage('synthesis') {
+					agent {
+						label 'ise-01'
+					}
+					steps {
+						unstash 'firmware'
+						dir('FW/sources/hdl'){
+							sh 'make clean'
+							sh 'make mcs'
+						}
+					}
+					post {
+						success {
+							archiveArtifacts '/FW/sources/hdl/build/*.bit'
+							archiveArtifacts '/FW/sources/hdl/build/*.mcs'
+						}
+						cleanup {
+							cleanWs()
+						}
+					}
 				}
 			}
-            
         }
-        
-        stage('synthesis') {
-            agent {
-                label 'ise-01'
-            }
-            steps {
-                unstash 'firmware'
-                dir('FW/sources/hdl'){
-                    sh 'make clean'
-                    sh 'make mcs'
-                }
-            }
-			post {
-				success {
-					archiveArtifacts '/FW/sources/hdl/build/*.bit'
-					archiveArtifacts '/FW/sources/hdl/build/*.mcs'
-				}
-				cleanup {
-					cleanWs()
-				}
-			}
-        }
-        
     }
     
 }
