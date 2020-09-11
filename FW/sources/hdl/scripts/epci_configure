@@ -1,0 +1,13 @@
+#!/bin/sh
+module="epci"
+device="epci"
+
+#ToDo
+#	resolve device address and BAR0 from it's 
+#	vendor and device ID
+address="03:01.0"
+bar0="0xe1500000"
+
+#set BAR0 after board is prgrammed
+setpci -s $address BASE_ADDRESS_0=$bar0
+
