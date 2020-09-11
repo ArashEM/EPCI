@@ -27,7 +27,7 @@ pipeline{
 					gitTool: 'Default', 
 					userRemoteConfigs: [[url: 'https://github.com/ArashEM/EPCI.git']]
 				])
-                stash includes: 'FW/sources/**', name: 'firmware'
+                stash includes: 'FW/sources/**', name: 'firmware-src'
             }
         }
 		stage('parallel build')
@@ -38,7 +38,7 @@ pipeline{
 						label 'dh-01'
 					}
 					steps {
-						unstash 'firmware'
+						unstash 'firmware-src'
 						dir('FW/sources/driver'){
 							sh 'make clean'
 							sh 'make'
@@ -47,6 +47,7 @@ pipeline{
 					post {
 						success {
 							archiveArtifacts 'FW/sources/driver/build/*.ko'
+							stash includes:  'FW/sources/driver/build/*.ko', name: 'kernel-object'
 						}
 						cleanup {
 							cleanWs()
@@ -60,7 +61,7 @@ pipeline{
 						label 'ise-01'
 					}
 					steps {
-						unstash 'firmware'
+						unstash 'firmware-src'
 						dir('FW/sources/hdl'){
 							sh 'make clean'
 							sh 'make mcs'
@@ -69,6 +70,7 @@ pipeline{
 					post {
 						success {
 							archiveArtifacts '/FW/sources/hdl/build/*.bit'
+							stash includes:   'FW/sources/hdl/build/*.bit', name: 'bitfile'
 							archiveArtifacts '/FW/sources/hdl/build/*.mcs'
 						}
 						cleanup {
@@ -78,6 +80,25 @@ pipeline{
 				}
 			}
         }
+		stage('deploy')
+		{
+			agent {
+                label 'dh-01'
+            }
+            steps {
+				unstash 'firmware-src'
+				unstash 'bitfile'
+				unstash 'kernel-object'
+				dir('FW/sources/hdl') {
+					sh 'sudo openocd -f scripts/epci-openocd.cfg'
+				}
+				sh 'sudo setpci -s 03:01.0 BASE_ADDRESS_0=0xe1500000'
+				dir('FW/sources/driver')
+				{
+					sh 'sudo insmod build/epci.ko mem_len=32768'
+				}
+			}
+		}
     }
     
 }
