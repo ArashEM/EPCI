@@ -91,11 +91,10 @@ pipeline{
 				unstash 'kernel-object'
 				dir('FW/sources/hdl') {
 					sh 'sudo openocd -f scripts/epci-openocd.cfg'
+					sh 'sudo ./scripts/epci_configure'
 				}
-				sh 'sudo setpci -s 03:01.0 BASE_ADDRESS_0=0xe1500000'
-				dir('FW/sources/driver')
-				{
-					sh 'sudo insmod build/epci.ko mem_len=32768'
+				dir('FW/sources/driver') {
+					sh 'sudo ./scripts/epci_load'
 				}
 			}
 		}
