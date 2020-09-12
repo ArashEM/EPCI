@@ -1,6 +1,6 @@
 #!/bin/sh
 module="epci"
-device="epci"
+device="epci-mem"
 
 # invoke rmmod with all arguments we got
 rmmod $module $* || exit 1

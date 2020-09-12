@@ -1,7 +1,7 @@
 #!/bin/sh
 # $Id: scull_load,v 1.4 2004/11/03 06:19:49 rubini Exp $
 module="epci"
-device="epci"
+device="epci-mem"
 args="mem_len=32768"
 mode="664"
 
@@ -17,7 +17,7 @@ fi
 insmod build/$module.ko $args || exit 1
 
 # retrieve major number
-major=$(awk "\$2==\"$module\" {print \$1}" /proc/devices)
+major=$(awk "\$2==\"$device\" {print \$1}" /proc/devices)
 
 # Remove stale nodes and replace them, then give gid and perms
 # Usually the script is shorter, it's scull that has several devices in it.
