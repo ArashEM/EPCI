@@ -16,6 +16,10 @@
 pipeline{
     agent none 
     stages{
+		/**
+		* checkout repository in master node
+		* files are stashed to be used in slaves 
+		*/
         stage('checkout'){
             agent {
                 label 'master'
@@ -30,9 +34,13 @@ pipeline{
                 stash includes: 'FW/sources/**', name: 'firmware-src'
             }
         }
+		/**
+		* kernel module build and synthesis are independednt
+		*/
 		stage('parallel build')
 		{
 			parallel {
+				// Compile kernel module 
 				stage('build'){
 					agent {
 						label 'dh-01'
@@ -55,7 +63,7 @@ pipeline{
 					}
 					
 				}
-			
+				// Generate bit file for FPGA 
 				stage('synthesis') {
 					agent {
 						label 'ise-01'
@@ -85,6 +93,9 @@ pipeline{
 			agent {
                 label 'dh-01'
             }
+			/**
+			* gather all artifacts to be deployed in EPCI board 
+			*/
             steps {
 				unstash 'firmware-src'
 				unstash 'bitfile'
@@ -95,6 +106,11 @@ pipeline{
 				}
 				dir('FW/sources/driver') {
 					sh 'sudo ./scripts/epci_load'
+				}
+			}
+			post {
+				cleanup {
+					cleanWs()
 				}
 			}
 		}
