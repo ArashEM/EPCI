@@ -40,7 +40,7 @@ pipeline{
 		stage('parallel build')
 		{
 			parallel {
-				// Compile kernel module 
+				// Compile kernel module and test application 
 				stage('build'){
 					agent {
 						label 'dh-01'
@@ -51,11 +51,16 @@ pipeline{
 							sh 'make clean'
 							sh 'make'
 						}
+						dir('FW/sources/tests/mem'){
+						    sh 'make clean'
+						    sh 'make'
+						}
 					}
 					post {
 						success {
 							archiveArtifacts 'FW/sources/driver/build/*.ko'
 							stash includes:  'FW/sources/driver/build/*.ko', name: 'kernel-object'
+							stash includes:  'FW/sources/tests/mem/build/*', name: 'test-app'
 						}
 						cleanup {
 							cleanWs()
@@ -114,6 +119,34 @@ pipeline{
 				}
 			}
 		}
+		
+		stage('Test'){
+		    agent {
+                label 'dh-01'
+            }
+			/**
+			* Testing all aspect of EPCI driver/firmware 
+			*/
+            steps {
+                unstash 'firmware-src'
+                unstash 'test-app'
+				// run test application
+                dir('FW/sources/tests/mem') {
+                    sh './run_mem_bt.sh 100'
+                }
+				// uload driver
+                dir('FW/sources/driver')
+				{
+					sh 'sudo ./scripts/epci_unload'
+				}
+            }
+            post {
+			    cleanup {
+				    cleanWs()
+			    }
+			}
+		}
+		
     }
     
 }
