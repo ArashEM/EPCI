@@ -67,8 +67,8 @@ int main(int argc, char *argv[])
             printf("Error in address:0x%08x\r\n",index);
             printf("Read value:0x%08x\r\n",rbuffer[index]);
             printf("Write value:0x%08x\r\n",wbuffer[index]);
-            ret = -EINVAL;
-            break;
+            ret = -EINVAL;  
+            break;      
         }
 		else ret = 0;
 
