@@ -66,9 +66,7 @@ int main(int argc, char *argv[])
             printf("Read  value:0x%02x\r\n",rbuffer[index]);
             printf("Write value:0x%02x\r\n",wbuffer[index]);
             ret = -EINVAL;
-            break;
         }
-		else ret = 0;
 
 cleanup:
     fclose(pfile);
