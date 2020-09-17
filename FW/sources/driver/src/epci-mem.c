@@ -83,9 +83,29 @@ static loff_t
 epci_llseek(struct file * file, loff_t offset, int whence)
 {
 	struct epci_priv * priv = NULL;
+	long newpos;
 	priv = file->private_data;
-	
-	return 0;
+    
+    switch(whence) {
+    case 0: /* SEEK_SET */
+        newpos = offset;
+        break;
+
+    case 1: /* SEEK_CUR */
+        newpos = file->f_pos + offset;
+        break; 
+
+    case 2: /* SEEK_END */
+        newpos = priv->size + offset;
+        break;
+
+    default: /* can't happen */    
+        return -EINVAL;
+    }
+
+    if (newpos<0) return -EINVAL;
+    file->f_pos = newpos;
+	return newpos;
 }
 
 static int epci_open(struct inode * inode, struct file * file)

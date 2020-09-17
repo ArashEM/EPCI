@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <time.h>
 
 const int   mem_size = 32768;
 const char *mem_path = "/dev/epci-mem"; 
@@ -36,9 +37,11 @@ int main(int argc, char *argv[])
         return errno;
     }
 
-    /* fill buffer with sequence of numbers */
+	srand(time(NULL));   // Initialization, should only be called once.
+
+    /* fill buffer with sequence of random numbers */
     for(index=0; index < mem_size; index++)
-        wbuffer[index] = (char)index;
+        wbuffer[index] = (char)rand();
 
     /* fill /dev/epci-mem with buffer */
     result = fwrite(wbuffer, sizeof(char), mem_size, pfile);
