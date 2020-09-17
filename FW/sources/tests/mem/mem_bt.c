@@ -16,8 +16,6 @@ int main(int argc, char *argv[])
     int     index;
     size_t  result;
     int     ret;
-    
-    printf("EPCI-V1.0x memory blackbox test program.\r\n");
 
     /* open epci-mem to read/write */
     pfile = fopen(mem_path, "r+");
@@ -65,8 +63,8 @@ int main(int argc, char *argv[])
     for(index=0;index < mem_size; index++)
         if(wbuffer[index] != rbuffer[index]) {
             printf("Error in address:0x%08x\r\n",index);
-            printf("Read value:0x%08x\r\n",rbuffer[index]);
-            printf("Write value:0x%08x\r\n",wbuffer[index]);
+            printf("Read  value:0x%02x\r\n",rbuffer[index]);
+            printf("Write value:0x%02x\r\n",wbuffer[index]);
             ret = -EINVAL;
             break;
         }
