@@ -12,13 +12,13 @@ app="./build/mem_bt"
 if [ ! -f "$app" ]; then 
     echo "$app dose not exist"
     echo "run make first"
-    exit -1
+    exit 1
 fi
 
 # check for number of iteration 
 if [ -z "$1" ]; then
     echo "Usage: "$0" <number of iteration>"
-    exit -1
+    exit 2
 fi
 
 # call test application in loop
@@ -36,4 +36,10 @@ done
 
 echo "Total iteration: $index"
 echo "Total errors: $err"
+
+if [ "$err" -ne 0 ]; then
+    exit 3
+else
+    exit 0
+fi
 
