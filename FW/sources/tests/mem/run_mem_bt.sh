@@ -30,7 +30,6 @@ do
         echo "error in iteration $index"
         err=$(( $err + 1))
     fi
-    sleep 0.1
     index=$(( $index + 1))
 done
 
