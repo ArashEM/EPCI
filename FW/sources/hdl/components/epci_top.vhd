@@ -59,7 +59,7 @@ entity epci_top is
 		---------------------------------------------------------------
 		LEDS				: 	out 	std_logic_vector(LEDWidth - 1 downto 0)	
 							:=	(others => '0');
-		UART_TX				:	out		std_logic	:=	'0';
+		UART_TX				:	out		std_logic	:=	'1';
 		UART_RX				:	in		std_logic;
 		GPIO				:	inout	std_logic_vector(GPIOWidth - 1 downto 0)
 							:=	(others => 'Z');
@@ -86,11 +86,14 @@ architecture behavioral of epci_top is
 	----------------------------------------------------------------
 	signal		U3_LEDS_CS	:	std_logic;
 	----------------------------------------------------------------
+	signal		U4_UART_CS	:	std_logic;
+	----------------------------------------------------------------
 	-- Address Map
 	--###########################################################
 	--	(0		, 0x8000)	:	BRAM 	(8K x 32 bit)
 	--	(0x8000	, 0x8010)	:	GPIO	(4	x 32 bit)
 	--	(0x8010	, 0x8020)	:	LEDs	(4	x 32 bit)
+	--	(0x8020	, 0x8030)	:	UART	(4	x 32 bit)
 	--###########################################################
 	
 	constant	BRAM_ADDR_W	:	integer		
@@ -136,6 +139,21 @@ architecture behavioral of epci_top is
 									AddrWidth - LED_SIZE - 1 downto 0
 								)
 							:=	LED_BASE(AddrWidth - 1 downto LED_SIZE);
+							
+	-----------------------------------------------------------------------------
+	constant	UART_ADDR_W	:	integer		
+							:=	2;			-- 4 x 32 bit
+							
+	constant	UART_SIZE	:	integer	
+							:=	UART_ADDR_W + 2;	-- 32 bit bus width
+							
+	constant	UART_BASE	:	std_logic_vector(
+									AddrWidth - 1 downto 0)	
+							:=	x"8020";			
+	constant	UART_MASK	:	std_logic_vector(
+									AddrWidth - UART_SIZE - 1 downto 0
+								)
+							:=	UART_BASE(AddrWidth - 1 downto UART_SIZE);
 
 begin	
 
@@ -258,6 +276,37 @@ begin
 		WR_STRB		=>	bus_wr_strb
 	);
 	
+	--%<-------------------------------%<---------------------------
+	U4_UART: entity work.UART_IF 
+	generic map (
+		BusWidth	=>	BusWidth,
+		AddrWidth	=>	UART_ADDR_W
+	)
+	port map (
+		-------------------------------------------------------------
+		-- Clock / Reset
+		-------------------------------------------------------------
+		CLK			=>	PCLK,
+		RST_N		=> 	NRST,
+		-------------------------------------------------------------
+		-- Serial
+		-------------------------------------------------------------
+		TxD			=>	UART_TX,
+		RxD			=>	UART_RX,
+		-------------------------------------------------------------
+		-- Memory Map interface
+		-------------------------------------------------------------
+		CS			=>	U4_UART_CS,
+		ADDR		=>	bus_address(UART_SIZE - 1 downto 2),
+		OBUS		=>	bus_r_data,
+		IBUS		=>	bus_w_data,
+		NMASK		=>	bus_nmask,
+		RD_STRB		=>	bus_rd_strb,
+		WR_STRB		=>	bus_wr_strb
+	);
+	
+	
+	
 	Decode: process(bus_address, bus_rd_strb, bus_wr_strb) 
 	begin
 		-- BRAM 
@@ -279,6 +328,13 @@ begin
 			U3_LEDS_CS	<=	'1';
 		else
 			U3_LEDS_CS	<=	'0';
+		end if;
+		
+		-- UART
+		if(bus_address(AddrWidth - 1 downto UART_SIZE ) = UART_MASK) then
+			U4_UART_CS	<=	'1';
+		else
+			U4_UART_CS	<=	'0';
 		end if;
 		
 	end process;
